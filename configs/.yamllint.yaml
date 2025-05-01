@@ -19,3 +19,5 @@ rules:
   key-duplicates: {}
   octal-values:
     forbid-implicit-octal: true
+  line-length:
+    max: 120
