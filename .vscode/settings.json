@@ -1,0 +1,17 @@
+{
+  // Use this file to override the default settings for your workspace.
+  "editor.defaultFormatter": "trunk.io",
+
+  // Configure file cleanup behavior
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "files.eol": "\n",
+
+  // Configure Git settings
+  "git.enableSmartCommit": true,
+  "git.ignoreLimitWarning": true,
+
+  // Configure editor settings
+  "editor.tabSize": 2,
+}
