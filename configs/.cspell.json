@@ -1,0 +1,38 @@
+{
+  "version": "0.2",
+  "suggestionsTimeout": 5000,
+  "language": "en,de-de",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/vendor/**",
+    "**/.git/**",
+    "**/.svn/**",
+    "**/.hg/**",
+    "**/.idea/**",
+    "**/.vscode/**",
+    "**/.DS_Store"
+  ],
+  "dictionaries": [
+    "technical",
+    "node",
+    "python",
+    "go",
+    "java",
+    "csharp",
+    "cpp",
+    "rust",
+    "php",
+    "ruby",
+    "swift",
+    "typescript",
+    "html",
+    "css",
+    "json",
+    "yaml",
+    "markdown",
+    "latex"
+  ]
+}

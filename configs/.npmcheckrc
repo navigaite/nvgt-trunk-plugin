@@ -1,0 +1,10 @@
+{
+  "depcheck": {
+    "ignoreMatches": [
+      "sharp",
+      "stylelint-config-standard",
+      "stylelint-config-tailwindcss",
+      "autoprefixer"
+    ]
+  }
+}

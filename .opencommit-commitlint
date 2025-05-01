@@ -1,0 +1,14 @@
+{
+  "hash": "716378f118b8c56fea7cd8852b8bcc07c52404643682ba7ee573d236d7d39e03",
+  "prompts": [],
+  "consistency": {
+    "english": {
+      "localLanguage": "english",
+      "commitFix": "fix(server): change 'port' to uppercase 'PORT'",
+      "commitFeat": "feat(server): allow server to use environment variable for port",
+      "commitFixOmitScope": "fix: change 'port' to uppercase 'PORT'",
+      "commitFeatOmitScope": "feat: allow server to use environment variable for port",
+      "commitDescription": "Refactored 'port' to 'PORT' and added env var support for port."
+    }
+  }
+}

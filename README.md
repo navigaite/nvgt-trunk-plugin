@@ -3,7 +3,6 @@
 [![Trunk](https://img.shields.io/badge/Trunk-Powered-brightgreen)](https://trunk.io)
 [![Version](https://img.shields.io/badge/Version-v1.0.1-blue)](https://github.com/Navigaite/nvgt-trunk-plugin/releases)
 [![Last Updated](https://img.shields.io/badge/Last%20Updated-May%202025-success)](https://github.com/Navigaite/nvgt-trunk-plugin)
-[![Languages](https://img.shields.io/badge/Languages-40%2B-orange)](https://github.com/Navigaite/nvgt-trunk-plugin)
 [![Linters](https://img.shields.io/badge/Linters-40%2B-yellow)](https://github.com/Navigaite/nvgt-trunk-plugin)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 
