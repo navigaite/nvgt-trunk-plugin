@@ -1,0 +1,23 @@
+---
+extends: default
+
+rules:
+  # 80 chars should be enough, but don't fail if a line is longer
+  line-length: disable
+  truthy:
+    allowed-values:
+      - 'true'
+      - 'false'
+      - 'on'
+      - 'off'
+  comments:
+    min-spaces-from-content: 1
+  quoted-strings:
+    required: only-when-needed
+    extra-allowed: ['{|}']
+  empty-values:
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: true
+  key-duplicates: {}
+  octal-values:
+    forbid-implicit-octal: true
