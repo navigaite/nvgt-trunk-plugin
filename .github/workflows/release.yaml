@@ -88,5 +88,5 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          generate_release_notes: true
+          body: ${{steps.github_release.outputs.changelog}}
           make_latest: true
