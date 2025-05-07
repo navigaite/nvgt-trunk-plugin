@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: write
       discussions: write
-      pull-requests: read
+      pull-requests: write
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.current_version }}
@@ -75,16 +75,19 @@ jobs:
           github_token: ${{ steps.generate-token.outputs.token }}
           custom_tag: ${{ steps.version.outputs.current_version }}
 
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v5
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - uses: google-github-actions/release-please-action@v4
         with:
+          # this assumes that you have created a personal access token
+          # (PAT) and configured it as a GitHub action secret named
+          # `MY_RELEASE_PLEASE_TOKEN` (this secret name is not important).
           token: ${{ steps.generate-token.outputs.token }}
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{steps.github_release.outputs.changelog}}
-          make_latest: true
+          # this is a built-in strategy in release-please, see "Action Inputs"
+          # for more options
+          release-type: node
+    # - name: Release
+    #   uses: softprops/action-gh-release@v2
+    #   with:
+    #     token: ${{ steps.generate-token.outputs.token }}
+    #     tag_name: ${{ steps.tag_version.outputs.new_tag }}
+    #     generate_release_notes: true
+    #     make_latest: true
