@@ -37,6 +37,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Update version
+        id: update-version
+        env:
+          VERSION_INCREMENT: major
+        run: |
+          version=$(npm version --no-git-tag-version ${{ env.VERSION_INCREMENT }})
+          echo "New version: $version"
+          echo "NEW_VERSION=${version}" >> $GITHUB_OUTPUT
+
+      - name: Set user
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          git config --global user.name "navigaite-workflow-app[bot]"
+          git config --global user.email "133966083+navigaite-workflow-app[bot]@users.noreply.github.com"
+
+      - name: Create Release Branch
+        run: |
+          git checkout main
+
+      - name: Commit Version Update and push changes
+        id: version-update
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore(release): Bump version to ${{ steps.update-version.outputs.NEW_VERSION }}"
+          git push origin main
+
       - name: Get Current Version
         id: version
         run: echo "current_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
@@ -61,6 +88,5 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          body_path: ./.github/misc/release-notes.tmpl
           generate_release_notes: true
           make_latest: true
