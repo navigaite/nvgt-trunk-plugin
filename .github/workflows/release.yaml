@@ -32,25 +32,3 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           release-type: node
-          skip-github-pull-request: true
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: tag major and minor versions
-        run: |
-          git config user.name navigaite-workflow-app[bot]
-          git config user.email 133966083+navigaite-workflow-app[bot]@users.noreply.github.com
-          git remote add gh-token \
-            "https://${{ steps.generate-token.outputs.token }}@github.com/${{ github.repository	}}.git"
-          git tag -d v${{ steps.release.outputs.major }} || true
-          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git push origin :v${{ steps.release.outputs.major }} || true
-          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
-          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
-          git tag -a "v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}" \
-            -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
-          git push origin v${{ steps.release.outputs.major }}
-          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-        if: ${{ steps.release.outputs.release_created }}
