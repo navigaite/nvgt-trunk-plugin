@@ -1,4 +1,16 @@
 {
+  "name": "nvgt-trunk-plugin",
+  "version": "1.0.5",
+  "description": "// Navigaite Trunk Plugin",
+  "homepage": "https://navigaite.de",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/navigaite/nvgt-trunk-plugin"
+  },
+  "author": {
+    "name": "Navigaite",
+    "email": "info@navigaite.de"
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0"
