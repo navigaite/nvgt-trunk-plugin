@@ -75,19 +75,27 @@ jobs:
           github_token: ${{ steps.generate-token.outputs.token }}
           custom_tag: ${{ steps.version.outputs.current_version }}
 
-      - uses: google-github-actions/release-please-action@v4
+      - uses: googleapis/release-please-action@main
+        id: release
         with:
-          # this assumes that you have created a personal access token
-          # (PAT) and configured it as a GitHub action secret named
-          # `MY_RELEASE_PLEASE_TOKEN` (this secret name is not important).
-          token: ${{ steps.generate-token.outputs.token }}
-          # this is a built-in strategy in release-please, see "Action Inputs"
-          # for more options
+          token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
-    # - name: Release
-    #   uses: softprops/action-gh-release@v2
-    #   with:
-    #     token: ${{ steps.generate-token.outputs.token }}
-    #     tag_name: ${{ steps.tag_version.outputs.new_tag }}
-    #     generate_release_notes: true
-    #     make_latest: true
+          skip-github-pull-request: true
+
+      - uses: actions/checkout@v4
+
+      - name: tag major and minor versions
+        run: |
+          git config user.name navigaite-workflow-app[bot]
+          git config user.email 133966083+navigaite-workflow-app[bot]@users.noreply.github.com
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN}}@github.com/${{github.repository	}}.git"
+          git tag -d v${{ steps.release.outputs.major }} || true
+          git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git push origin :v${{ steps.release.outputs.major }} || true
+          git push origin :v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
+          git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
+          git tag -a "v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}" \
+            -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
+          git push origin v${{ steps.release.outputs.major }}
+          git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
+        if: ${{ steps.release.outputs.release_created }}
