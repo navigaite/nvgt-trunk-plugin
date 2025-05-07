@@ -1,0 +1,16 @@
+---
+name: 🔧 Nightly Maintenance
+
+on:
+  schedule:
+    - cron: 0 2 * * 1-5
+  workflow_dispatch: {}
+  workflow_call: {}
+
+permissions: read-all
+
+jobs:
+  maintenance:
+    name: Maintenance
+    uses: navigaite/.github/.github/workflows/cron-cleanup-actions.yaml@main
+    secrets: inherit
