@@ -24,8 +24,6 @@ jobs:
       discussions: write
       pull-requests: write
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.current_version }}
     steps:
       - name: Generate a github token
         id: generate-token
@@ -36,44 +34,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Update version
-        id: update-version
-        env:
-          VERSION_INCREMENT: major
-        run: |
-          version=$(npm version --no-git-tag-version ${{ env.VERSION_INCREMENT }})
-          echo "New version: $version"
-          echo "NEW_VERSION=${version}" >> $GITHUB_OUTPUT
-
-      - name: Set user
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-        run: |
-          git config --global user.name "navigaite-workflow-app[bot]"
-          git config --global user.email "133966083+navigaite-workflow-app[bot]@users.noreply.github.com"
-
-      - name: Create Release Branch
-        run: |
-          git checkout main
-
-      - name: Commit Version Update and push changes
-        id: version-update
-        run: |
-          git add package.json package-lock.json
-          git commit -m "chore(release): Bump version to ${{ steps.update-version.outputs.NEW_VERSION }}"
-          git push origin main
-
-      - name: Get Current Version
-        id: version
-        run: echo "current_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Tag version
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ steps.generate-token.outputs.token }}
-          custom_tag: ${{ steps.version.outputs.current_version }}
 
       - uses: googleapis/release-please-action@main
         id: release
