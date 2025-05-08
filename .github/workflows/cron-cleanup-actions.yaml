@@ -11,6 +11,6 @@ permissions: read-all
 
 jobs:
   maintenance:
-    name: Maintenance
+    name: // Navigaite
     uses: navigaite/.github/.github/workflows/cron-cleanup-actions.yaml@main
     secrets: inherit
