@@ -19,3 +19,7 @@ jobs:
     name: Create Release
     uses: navigaite/.github/.github/workflows/sub-create-release.yaml@main
     secrets: inherit
+    permissions:
+      contents: write
+      discussions: write
+      pull-requests: read
