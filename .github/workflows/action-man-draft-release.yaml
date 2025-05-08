@@ -32,3 +32,7 @@ jobs:
     secrets: inherit
     with:
       semver_increment: ${{ github.event.inputs.semver_increment }}
+    permissions:
+      contents: write
+      discussions: write
+      pull-requests: read
