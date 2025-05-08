@@ -39,3 +39,4 @@ jobs:
           arguments: --apply-to=plugin.yaml -n
           github-token: ${{ steps.generate-token.outputs.token }}
           reviewers: maxbec
+          base: dev
