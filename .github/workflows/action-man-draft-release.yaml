@@ -27,8 +27,7 @@ concurrency:
 
 jobs:
   action-man-draft-release:
-    name: Manual Release
-    uses: navigaite/.github/.github/workflows/action-man-draft-release.yaml@main
+    uses: navigaite/.github/.github/workflows/sub-draft-new-release.yaml@main
     secrets: inherit
     with:
       semver_increment: ${{ github.event.inputs.semver_increment }}

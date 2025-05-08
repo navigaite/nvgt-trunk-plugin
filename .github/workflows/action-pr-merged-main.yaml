@@ -12,7 +12,10 @@ on:
     branches:
       - main
 
-permissions: read-all
+permissions:
+  contents: write
+  discussions: write
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -23,7 +26,3 @@ jobs:
     name: Create Release
     uses: navigaite/.github/.github/workflows/sub-create-release.yaml@main
     secrets: inherit
-    permissions:
-      contents: write
-      discussions: write
-      pull-requests: read
