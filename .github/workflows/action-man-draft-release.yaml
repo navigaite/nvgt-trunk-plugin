@@ -1,8 +1,11 @@
 ---
 # This workflow prepares a new release. It creates a release branch from dev, opens a PR to main
 # and labels it correctly. The package.json version is incremented automatically regarding the increment input.
-#
-# The trigger should be:
+
+name: 📦 Release drafted
+
+run-name: '${{ github.workflow }} by ${{ github.actor }}'
+
 on:
   workflow_dispatch:
     inputs:
@@ -24,8 +27,10 @@ concurrency:
 
 jobs:
   action-man-draft-release:
-    name: Manual Release
-    uses: navigaite/.github/.github/workflows/action-man-draft-release.yaml@main
+    uses: navigaite/.github/.github/workflows/sub-draft-new-release.yaml@main
     secrets: inherit
     with:
       semver_increment: ${{ github.event.inputs.semver_increment }}
+    permissions:
+      contents: write
+      pull-requests: write
