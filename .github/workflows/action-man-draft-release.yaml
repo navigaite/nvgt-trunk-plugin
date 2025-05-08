@@ -2,9 +2,9 @@
 # This workflow prepares a new release. It creates a release branch from dev, opens a PR to main
 # and labels it correctly. The package.json version is incremented automatically regarding the increment input.
 
-name: 📦 Release drafted
+name: 📦 Draft new Release
 
-run-name: '${{ github.workflow }} by ${{ github.actor }}'
+run-name: '${{ github.workflow }} | ${{ github.actor }}'
 
 on:
   workflow_dispatch:
@@ -19,7 +19,9 @@ on:
           - minor
           - patch
 
-permissions: read-all
+permissions:
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -27,6 +29,7 @@ concurrency:
 
 jobs:
   action-man-draft-release:
+    name: // Navigaite
     uses: navigaite/.github/.github/workflows/sub-draft-new-release.yaml@main
     secrets: inherit
     with:

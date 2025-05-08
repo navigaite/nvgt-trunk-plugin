@@ -5,7 +5,7 @@
 # The trigger should be:
 name: 🚀 Create new Release
 
-run-name: '${{ github.workflow }} by ${{ github.actor }}'
+run-name: '${{ github.workflow }} | ${{ github.actor }}'
 
 on:
   push:
@@ -23,6 +23,6 @@ concurrency:
 
 jobs:
   sub-create-release:
-    name: Create Release
+    name: // Navigaite
     uses: navigaite/.github/.github/workflows/sub-create-release.yaml@main
     secrets: inherit
