@@ -1,0 +1,21 @@
+---
+name: 📅 Upgrade Trunk
+
+on:
+  schedule:
+    # Weekly at midnight M/F morning
+    - cron: 0 8 * * 1,5
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # For trunk to create PRs
+  pull-requests: write # For trunk to create PRs
+
+jobs:
+  maintenance:
+    name: // Navigaite
+    uses: navigaite/.github/.github/workflows/cron-trunk-upgrade.yaml@main
+    secrets: inherit
+    permissions:
+      contents: write # For trunk to create PRs
+      pull-requests: write # For trunk to create PRs

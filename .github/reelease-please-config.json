@@ -1,9 +1,0 @@
-{
-  "branches": [
-    {
-      "branch": "main",
-      "release-type": "node",
-      "pull-request-branch-name": "release/v${version}"
-    }
-  ]
-}
