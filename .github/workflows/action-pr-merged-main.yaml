@@ -3,6 +3,10 @@
 # and labels it correctly. The package.json version is incremented automatically regarding the increment input.
 #
 # The trigger should be:
+name: 🚀 Create new Release
+
+run-name: '${{ github.workflow }} by ${{ github.actor }}'
+
 on:
   push:
     branches:

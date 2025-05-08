@@ -1,5 +1,6 @@
 ---
 name: 📅 Weekly
+
 on:
   schedule:
     # Weekly at midnight M/F morning
