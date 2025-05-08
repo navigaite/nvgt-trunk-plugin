@@ -40,3 +40,4 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
           reviewers: maxbec
           base: dev
+          prefix: 'ci(trunk-upgrade): '
