@@ -1,0 +1,21 @@
+---
+# This workflow prepares a new release. It creates a release branch from dev, opens a PR to main
+# and labels it correctly. The package.json version is incremented automatically regarding the increment input.
+#
+# The trigger should be:
+on:
+  push:
+    branches:
+      - main
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  sub-create-release:
+    name: Create Release
+    uses: navigaite/.github/.github/workflows/sub-create-release.yaml@main
+    secrets: inherit

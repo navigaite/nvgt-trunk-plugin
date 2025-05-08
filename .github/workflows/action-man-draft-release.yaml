@@ -1,0 +1,31 @@
+---
+# This workflow prepares a new release. It creates a release branch from dev, opens a PR to main
+# and labels it correctly. The package.json version is incremented automatically regarding the increment input.
+#
+# The trigger should be:
+on:
+  workflow_dispatch:
+    inputs:
+      semver_increment:
+        description: The version you want to release.
+        required: true
+        default: patch
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  action-man-draft-release:
+    name: Manual Release
+    uses: navigaite/.github/.github/workflows/action-man-draft-release.yaml@main
+    secrets: inherit
+    with:
+      semver_increment: ${{ github.event.inputs.semver_increment }}

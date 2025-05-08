@@ -78,6 +78,7 @@ lint:
   # Sourcing repos will have these configs available to applicable linters
   exported_configs:
     - configs:
+        - configs/.checkov.yaml
         - configs/.cspell.json
         - configs/.flake8
         - configs/.hadolint.yaml
