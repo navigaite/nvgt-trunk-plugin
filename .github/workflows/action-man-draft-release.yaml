@@ -1,7 +1,4 @@
 ---
-# This workflow prepares a new release. It creates a release branch from dev, opens a PR to main
-# and labels it correctly. The package.json version is incremented automatically regarding the increment input.
-
 name: 📦 Draft new Release
 
 run-name: '${{ github.workflow }} | ${{ github.actor }}'
