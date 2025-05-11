@@ -72,7 +72,7 @@ lint:
     - taplo@0.9.3
     - terrascan@1.19.1
     - trivy@0.62.1
-    - trufflehog@3.88.28
+    - trufflehog@3.88.29
     - yamllint@1.37.1
 
   # Sourcing repos will have these configs available to applicable linters
