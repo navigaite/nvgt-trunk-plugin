@@ -65,3 +65,6 @@ jobs:
     name: // Navigaite
     uses: navigaite/.github/.github/workflows/sub-create-release.yaml@main
     secrets: inherit
+    needs: version-increment
+    with:
+      with_backmerge: false
