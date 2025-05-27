@@ -47,7 +47,7 @@ lint:
     - mypy@1.15.0
     - nancy@1.0.48
     - osv-scanner@2.0.2
-    - oxipng@9.1.2
+    - oxipng@9.1.5
     - pragma-once
     - prettier@3.5.3:
         packages:
