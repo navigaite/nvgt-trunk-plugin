@@ -1,7 +1,7 @@
 ---
 name: 🚀 Create new Release
 
-run-name: '${{ github.workflow }} | ${{ github.actor }}'
+run-name: '${{ github.workflow }}'
 
 on:
   pull_request:

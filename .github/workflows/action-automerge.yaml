@@ -1,5 +1,8 @@
 ---
 name: 🚀 Automerge Trunk Upgrade PRs
+
+run-name: '${{ github.workflow }}'
+
 on:
   pull_request:
     types:
