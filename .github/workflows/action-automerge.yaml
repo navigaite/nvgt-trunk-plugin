@@ -1,0 +1,41 @@
+---
+name: 🚀 Automerge Trunk Upgrade PRs
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 🔑 Create App Token for TrunkBuild App (Internal)
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.WORKFLOW_APP_ID }}
+          private_key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
+      - id: automerge
+        name: automerge
+        uses: pascalgn/automerge-action@v0.16.4
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
