@@ -1,0 +1,65 @@
+---
+name: 🔍 Code Quality Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write # For commenting on PRs
+
+jobs:
+  trunk-check:
+    name: 🚀 Trunk Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full history needed for better analysis
+          fetch-depth: 0
+
+      - name: 🔍 Trunk Check
+        uses: trunk-io/trunk-action@v1
+        with:
+          # Post annotations on GitHub for any issues found
+          check-mode: all
+
+      - name: 📊 Upload results to GitHub
+        uses: trunk-io/trunk-action/upload@v1
+        if: always()
+        with:
+          # Upload results even if checks fail
+          trunk-token: ${{ secrets.TRUNK_TOKEN }}
+
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔒 Run Trunk Security Scan
+        uses: trunk-io/trunk-action@v1
+        with:
+          check-mode: all
+          arguments: --filter=gitleaks,semgrep,trivy,bandit,checkov
+
+  format-check:
+    name: 🎨 Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🎨 Check formatting
+        uses: trunk-io/trunk-action@v1
+        with:
+          check-mode: all
+          arguments: --filter=prettier,black,rustfmt,gofmt
