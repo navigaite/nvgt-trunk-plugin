@@ -1,5 +1,85 @@
-# Generic, formatter-friendly config.
-select = ["B", "D3", "E", "F"]
+# Comprehensive Ruff configuration for Navigaite projects
 
-# Never enforce `E501` (line length violations). This should be handled by formatters.
-ignore = ["E501"]
+# Enable comprehensive rule sets for better code quality
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "D",   # pydocstyle
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit
+    "BLE", # flake8-blind-except
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "C90", # mccabe
+    "EM",  # flake8-errmsg
+    "FA",  # flake8-future-annotations
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "G",   # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PT",  # flake8-pytest-style
+    "Q",   # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "ERA", # eradicate
+    "PGH", # pygrep-hooks
+    "PL",  # Pylint
+    "TRY", # tryceratops
+    "RUF", # Ruff-specific rules
+]
+
+# Ignore specific rules that might be too strict or handled by formatters
+ignore = [
+    "E501",   # Line too long (handled by formatters)
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D203",   # 1 blank line required before class docstring (conflicts with D211)
+    "D213",   # Multi-line docstring summary should start at the second line (conflicts with D212)
+    "COM812", # Missing trailing comma (handled by formatters)
+    "ISC001", # Implicitly concatenated string literals (conflicts with formatters)
+]
+
+# Allow fix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude common directories
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "migrations",
+]
+
+# Assume Python 3.8+
+target-version = "py38"
+
+# Line length (should match your formatter)
+line-length = 88
+
+[per-file-ignores]
+# Tests can use magic values, assertions, and fixtures
+"**/tests/**/*.py" = ["S101", "PLR2004", "S105", "S106"]
+# Scripts can use print statements
+"**/scripts/**/*.py" = ["T201"]
+# Configuration files can have unused imports
+"**/conftest.py" = ["F401"]
+"**/settings/**/*.py" = ["F401"]

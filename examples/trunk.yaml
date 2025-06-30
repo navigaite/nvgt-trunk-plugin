@@ -1,0 +1,63 @@
+# Example .trunk/trunk.yaml for repositories using Navigaite Trunk Plugin
+version: 0.1
+cli:
+  version: 1.22.12
+
+# Source the Navigaite plugin to inherit all configurations
+plugins:
+  sources:
+    - id: navigaite
+      uri: https://github.com/navigaite/nvgt-trunk-plugin
+      ref: v5.0.8
+
+# Inherit the runtime versions from the plugin
+runtimes:
+  enabled:
+    - go@1.21.7
+    - node@22.16.0
+    - python@3.12.2
+    - ruby@3.4.2
+
+# All linters and their configurations are inherited from the plugin
+# You can override specific linters here if needed
+lint:
+  enabled:
+    # These are inherited from the plugin by default
+    # Add any project-specific linters here
+    # Example: Custom linter for your specific use case
+    # - custom-linter@1.0.0
+
+  disabled:
+    # Disable specific linters if they don't apply to your project
+    # Example: Disable Go linters for a pure Python project
+    # - gofmt
+    # - golangci-lint
+
+  # Project-specific ignores (in addition to plugin defaults)
+  ignore:
+    - linters: [ALL]
+      paths:
+        - generated/**
+        - vendor/**
+        - third_party/**
+
+# Actions are inherited from the plugin
+actions:
+  enabled:
+    # These come from the plugin:
+    # - trunk-announce
+    # - trunk-cache-prune
+    # - trunk-upgrade-available
+    # - trunk-check-pre-push
+    # - trunk-fmt-pre-commit
+
+    # Add any additional project-specific actions here
+# Optional: Override specific configurations if needed
+# tools:
+#   definitions:
+#     - name: custom-tool
+#       runtime: node
+#       package: custom-tool
+#       commands:
+#         - name: lint
+#           run: custom-tool check ${target}

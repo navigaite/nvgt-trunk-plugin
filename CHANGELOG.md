@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.0.8] - 2025-06-30
+
+### Added
+- Enhanced configuration management and version consistency
+- Improved documentation and examples
+
+### Changed
+- Updated version badges and documentation timestamps
+- Refined linter configurations for better performance
+
 ## [4.1.0](https://github.com/navigaite/nvgt-trunk-plugin/compare/v4.0.0...v4.1.0) (2025-05-07)
 
 
