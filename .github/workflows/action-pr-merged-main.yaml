@@ -1,11 +1,14 @@
 ---
 name: 🚀 Create new Release
 
-run-name: '${{ github.workflow }}'
+run-name: "${{ github.workflow }}"
 
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -60,6 +63,17 @@ jobs:
           git add package.json package-lock.json
           git commit -m "chore(release): Bump version to ${{ steps.update-version.outputs.NEW_VERSION }}"
           git push origin main
+
+      - name: 📤 Output new version and commit SHA
+        id: version-output
+        run: |
+          echo "NEW_VERSION=${{ steps.update-version.outputs.NEW_VERSION }}" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: ⏱️ Wait for commit to be available
+        run: |
+          echo "Waiting for commit to be fully processed..."
+          sleep 10
 
   sub-create-release:
     name: // Navigaite
