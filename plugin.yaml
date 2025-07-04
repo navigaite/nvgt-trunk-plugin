@@ -28,14 +28,14 @@ lint:
     - black@25.1.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
-    - cfnlint@1.36.1
+    - cfnlint@1.37.0
     - checkov@3.2.447
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
     - dotenv-linter@3.3.0
     - dustilock@1.2.0
-    - eslint@9.29.0
+    - eslint@9.30.1
     - git-diff-check
     - gitleaks@8.27.2
     - gofmt@1.20.4
@@ -52,18 +52,18 @@ lint:
     - prettier@3.6.2:
         packages:
           - prettier-plugin-tailwindcss@0.6.13
-    - prisma@6.10.1
+    - prisma@6.11.0
     - pylint@3.3.7
-    - renovate@41.14.0
+    - renovate@41.17.2
     - rubocop@1.39.0
     - ruff@0.12.1
     - rustfmt@1.68.2
     - semgrep@1.127.1
     - shellcheck@0.10.0
     - shfmt@3.6.0
-    - sort-package-json@3.3.1
-    - sql-formatter@15.6.5
-    - stylelint@16.21.0:
+    - sort-package-json@3.4.0
+    - sql-formatter@15.6.6
+    - stylelint@16.21.1:
         packages:
           - stylelint-config-standard@38.0.0
           - stylelint-config-tailwindcss@1.0.0
@@ -71,7 +71,7 @@ lint:
     - svgo@4.0.0
     - taplo@0.9.3
     - terrascan@1.19.1
-    - trivy@0.63.0
+    - trivy@0.64.0
     - trufflehog@3.89.2
     - yamllint@1.37.1
 
