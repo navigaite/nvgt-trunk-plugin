@@ -24,12 +24,12 @@ lint:
 
   enabled:
     - actionlint@1.7.7
-    - bandit@1.8.5
+    - bandit@1.8.6
     - black@25.1.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
-    - cfnlint@1.37.0
-    - checkov@3.2.447
+    - cfnlint@1.37.2
+    - checkov@3.2.450
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
@@ -51,14 +51,14 @@ lint:
     - pragma-once
     - prettier@3.6.2:
         packages:
-          - prettier-plugin-tailwindcss@0.6.13
+          - prettier-plugin-tailwindcss@0.6.14
     - prisma@6.11.1
     - pylint@3.3.7
-    - renovate@41.19.0
+    - renovate@41.29.1
     - rubocop@1.39.0
     - ruff@0.12.2
     - rustfmt@1.68.2
-    - semgrep@1.128.0
+    - semgrep@1.128.1
     - shellcheck@0.10.0
     - shfmt@3.6.0
     - sort-package-json@3.4.0
