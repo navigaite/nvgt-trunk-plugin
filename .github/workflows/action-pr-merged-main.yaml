@@ -1,7 +1,7 @@
 ---
 name: 🚀 Create new Release
 
-run-name: "${{ github.workflow }}"
+run-name: '${{ github.workflow }}'
 
 on:
   pull_request:
@@ -44,7 +44,7 @@ jobs:
           VERSION_INCREMENT: patch
         run: |
           version=$(npm version --no-git-tag-version ${{ env.VERSION_INCREMENT }})
-          echo "New version: $version"
+          echo "New version: $version"^
           echo "NEW_VERSION=${version}" >> $GITHUB_OUTPUT
 
       - name: 👤 Set user

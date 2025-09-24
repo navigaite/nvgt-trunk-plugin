@@ -22,7 +22,7 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
-          ref: main
+          fetch-depth: 0
 
       - name: 🔑 Create App Token for TrunkBuild App (Internal)
         uses: tibdex/github-app-token@v2
@@ -38,7 +38,6 @@ jobs:
           add-paths: plugin.yaml
           arguments: --apply-to=plugin.yaml -n
           github-token: ${{ steps.generate-token.outputs.token }}
-          reviewers: maxbec
           base: main
           prefix: 'ci(trunk-upgrade): '
           labels: automerge
