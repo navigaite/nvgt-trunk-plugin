@@ -29,13 +29,13 @@ lint:
     - buf-lint@1.31.0!
     - buildifier@8.2.1
     - cfnlint@1.40.2
-    - checkov@3.2.484
+    - checkov@3.2.487
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
     - dotenv-linter@3.3.0
     - dustilock@1.2.0
-    - eslint@9.37.0
+    - eslint@9.38.0
     - git-diff-check
     - gitleaks@8.28.0
     - gofmt@1.20.4
@@ -52,9 +52,9 @@ lint:
     - prettier@3.6.2:
         packages:
           - prettier-plugin-tailwindcss@0.7.1
-    - prisma@6.17.1
-    - pylint@4.0.1
-    - renovate@41.151.1
+    - prisma@6.18.0
+    - pylint@4.0.2
+    - renovate@41.158.0
     - rubocop@1.39.0
     - ruff@0.14.1
     - rustfmt@1.68.2
