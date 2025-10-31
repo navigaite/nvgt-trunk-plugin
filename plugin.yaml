@@ -28,8 +28,8 @@ lint:
     - black@25.9.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
-    - cfnlint@1.40.2
-    - checkov@3.2.487
+    - cfnlint@1.40.3
+    - checkov@3.2.489
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
@@ -46,7 +46,7 @@ lint:
     - markdown-link-check@3.13.7
     - mypy@1.18.2
     - nancy@1.0.52
-    - osv-scanner@2.2.3
+    - osv-scanner@2.2.4
     - oxipng@9.1.5
     - pragma-once
     - prettier@3.6.2:
@@ -54,11 +54,11 @@ lint:
           - prettier-plugin-tailwindcss@0.7.1
     - prisma@6.18.0
     - pylint@4.0.2
-    - renovate@41.159.0
+    - renovate@41.165.4
     - rubocop@1.39.0
     - ruff@0.14.2
     - rustfmt@1.68.2
-    - semgrep@1.140.0
+    - semgrep@1.141.1
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - sort-package-json@3.4.0
@@ -72,7 +72,7 @@ lint:
     - taplo@0.10.0
     - terrascan@1.19.1
     - trivy@0.67.2
-    - trufflehog@3.90.11
+    - trufflehog@3.90.12
     - yamllint@1.37.1
 
   # Sourcing repos will have these configs available to applicable linters
