@@ -28,16 +28,16 @@ lint:
     - black@25.9.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
-    - cfnlint@1.40.3
-    - checkov@3.2.489
+    - cfnlint@1.40.4
+    - checkov@3.2.490
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
     - dotenv-linter@3.3.0
     - dustilock@1.2.0
-    - eslint@9.38.0
+    - eslint@9.39.1
     - git-diff-check
-    - gitleaks@8.28.0
+    - gitleaks@8.29.0
     - gofmt@1.20.4
     - golangci-lint@1.64.8
     - hadolint@2.14.0
@@ -52,9 +52,9 @@ lint:
     - prettier@3.6.2:
         packages:
           - prettier-plugin-tailwindcss@0.7.1
-    - prisma@6.18.0
+    - prisma@6.19.0
     - pylint@4.0.2
-    - renovate@41.167.2
+    - renovate@41.173.1
     - rubocop@1.39.0
     - ruff@0.14.3
     - rustfmt@1.68.2
@@ -72,7 +72,7 @@ lint:
     - taplo@0.10.0
     - terrascan@1.19.1
     - trivy@0.67.2
-    - trufflehog@3.90.12
+    - trufflehog@3.90.13
     - yamllint@1.37.1
 
   # Sourcing repos will have these configs available to applicable linters
