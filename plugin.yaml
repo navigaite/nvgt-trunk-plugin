@@ -39,7 +39,7 @@ lint:
     - git-diff-check
     - gitleaks@8.29.0
     - gofmt@1.20.4
-    - golangci-lint@2.6.1
+    - golangci-lint@2.6.2
     - hadolint@2.14.0
     - isort@7.0.0
     - markdownlint@0.45.0
@@ -54,11 +54,11 @@ lint:
           - prettier-plugin-tailwindcss@0.7.1
     - prisma@6.19.0
     - pylint@4.0.3
-    - renovate@42.10.5
+    - renovate@42.11.0
     - rubocop@1.39.0
     - ruff@0.14.5
     - rustfmt@1.68.2
-    - semgrep@1.143.0
+    - semgrep@1.143.1
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - sort-package-json@3.4.0
