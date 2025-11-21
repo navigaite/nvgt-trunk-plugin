@@ -23,13 +23,13 @@ lint:
           run_when: [cli, monitor, ci] # do not run from lsp (maybe too slow)
 
   enabled:
-    - actionlint@1.7.8
-    - bandit@1.8.6
+    - actionlint@1.7.9
+    - bandit@1.9.1
     - black@25.11.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
-    - cfnlint@1.40.4
-    - checkov@3.2.493
+    - cfnlint@1.41.0
+    - checkov@3.2.494
     - clang-format@17.0.1
     - clang-tidy@17.0.1
     - clippy@1.71.1
@@ -37,28 +37,28 @@ lint:
     - dustilock@1.2.0
     - eslint@9.39.1
     - git-diff-check
-    - gitleaks@8.29.0
+    - gitleaks@8.29.1
     - gofmt@1.20.4
     - golangci-lint@2.6.2
     - hadolint@2.14.0
     - isort@7.0.0
-    - markdownlint@0.45.0
+    - markdownlint@0.46.0
     - markdown-link-check@3.13.7
     - mypy@1.18.2
     - nancy@1.0.52
-    - osv-scanner@2.2.4
+    - osv-scanner@2.3.0
     - oxipng@9.1.5
     - pragma-once
     - prettier@3.6.2:
         packages:
           - prettier-plugin-tailwindcss@0.7.1
-    - prisma@6.19.0
+    - prisma@7.0.0
     - pylint@4.0.3
-    - renovate@42.11.0
+    - renovate@42.19.0
     - rubocop@1.39.0
     - ruff@0.14.5
     - rustfmt@1.68.2
-    - semgrep@1.143.1
+    - semgrep@1.144.0
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - sort-package-json@3.4.0
@@ -72,7 +72,7 @@ lint:
     - taplo@0.10.0
     - terrascan@1.19.9
     - trivy@0.67.2
-    - trufflehog@3.91.0
+    - trufflehog@3.91.1
     - yamllint@1.37.1
 
   # Sourcing repos will have these configs available to applicable linters
