@@ -25,7 +25,7 @@ lint:
   enabled:
     - actionlint@1.7.9
     - bandit@1.9.2
-    - black@25.11.0
+    - black@25.12.0
     - buf-lint@1.31.0!
     - buildifier@8.2.1
     - cfnlint@1.42.0
@@ -39,7 +39,7 @@ lint:
     - git-diff-check
     - gitleaks@8.30.0
     - gofmt@1.20.4
-    - golangci-lint@2.7.1
+    - golangci-lint@2.7.2
     - hadolint@2.14.0
     - isort@7.0.0
     - markdownlint@0.46.0
@@ -47,18 +47,18 @@ lint:
     - mypy@1.19.0
     - nancy@1.0.52
     - osv-scanner@2.3.0
-    - oxipng@9.1.5
+    - oxipng@10.0.0
     - pragma-once
     - prettier@3.7.4:
         packages:
           - prettier-plugin-tailwindcss@0.7.2
     - prisma@7.1.0
     - pylint@4.0.4
-    - renovate@42.37.1
+    - renovate@42.39.4
     - rubocop@1.39.0
     - ruff@0.14.8
     - rustfmt@1.68.2
-    - semgrep@1.144.1
+    - semgrep@1.145.0
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - sort-package-json@3.5.0
