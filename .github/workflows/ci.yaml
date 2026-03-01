@@ -21,8 +21,7 @@ concurrency:
 
 jobs:
   pipeline:
-    uses: navigaite/github-organization/.github/workflows/universal-pipeline.yaml@v2
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v2
     with:
       config-file: .github/pipeline.yaml
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    secrets: inherit

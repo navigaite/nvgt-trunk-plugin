@@ -27,20 +27,11 @@ jobs:
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
       changelog: ${{ steps.changelog.outputs.changelog }}
-      new_version: ${{ steps.version.outputs.new_version }}
     steps:
-      - name: 🔑 Generate App Token
-        id: generate-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.WORKFLOW_APP_ID }}
-          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
-
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ steps.generate-token.outputs.token }}
 
       - name: 🔍 Check for changes since last release
         id: check
@@ -120,28 +111,15 @@ jobs:
               echo ""
             fi
 
-            # Show current tool versions summary
-            echo "### 📋 Current Tool Versions"
+            # Show current tool versions from plugin.yaml
+            echo "### 📋 Current Plugin Info"
             echo ""
-            echo "| Category | Tools |"
-            echo "|----------|-------|"
-            echo "| **Runtimes** | Go 1.23.6, Node 22.16.0, Python 3.13.2, Ruby 3.4.2 |"
-
-            # Extract enabled linter versions from plugin.yaml
-            LINTERS=$(grep -E '^\s+- \w' plugin.yaml | grep '@' | sed 's/.*- //' | sed 's/:$//' | sed 's/!$//' | sort)
-            LINTER_COUNT=$(echo "$LINTERS" | wc -l | tr -d ' ')
-            echo "| **Linters** | $LINTER_COUNT tools enabled |"
+            LINTER_COUNT=$(grep -cE '^\s+- \S+@' plugin.yaml || echo "0")
+            echo "- **Linters enabled:** $LINTER_COUNT"
             echo ""
 
             echo "CHANGELOG_EOF"
           } >> $GITHUB_OUTPUT
-
-      - name: 🔢 Bump version
-        id: version
-        if: steps.check.outputs.has_changes == 'true'
-        run: |
-          NEW_VERSION=$(npm version patch --no-git-tag-version)
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
   create-release:
     name: 🚀 Create Release
@@ -149,23 +127,15 @@ jobs:
     needs: check-updates
     if: needs.check-updates.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
     steps:
-      - name: 🔑 Generate App Token
-        id: generate-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.WORKFLOW_APP_ID }}
-          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
-
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ steps.generate-token.outputs.token }}
 
       - name: 👤 Configure git
         run: |
-          git config --global user.name "navigaite-workflow-app[bot]"
-          git config --global user.email "133966083+navigaite-workflow-app[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: 🔢 Bump version
         id: bump
@@ -207,7 +177,6 @@ jobs:
             ---
             _Automated weekly release by Navigaite CI/CD_
           generate_release_notes: false
-          token: ${{ steps.generate-token.outputs.token }}
 
       - name: 📊 Release Summary
         run: |
