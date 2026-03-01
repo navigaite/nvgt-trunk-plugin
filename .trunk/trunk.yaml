@@ -17,5 +17,5 @@ lint:
   disabled:
     - markdown-link-check
   ignore:
-    - linters: [markdownlint]
+    - linters: [markdownlint, prettier]
       paths: [CHANGELOG.md]
