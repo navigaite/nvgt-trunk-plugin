@@ -1,6 +1,8 @@
 ---
-# Navigaite Universal CI/CD Pipeline
-# Docs: https://github.com/navigaite/.github/blob/main/docs/GETTING_STARTED.md
+# Navigaite CI/CD Pipeline
+# Uses shared composite actions from navigaite/.github
+# Note: Reusable workflow_call doesn't work with .github-named repos (GitHub limitation),
+# so we inline the pipeline stages using the shared composite actions directly.
 
 name: CI/CD Pipeline
 
@@ -17,10 +19,73 @@ permissions:
   security-events: write
   id-token: write
 
+concurrency:
+  group: ${{ github.repository }}-pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
-  pipeline:
-    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v2
-    with:
-      config-file: .github/pipeline.yaml
-    secrets:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # =============================================================================
+  # SECURITY SCANNING
+  # =============================================================================
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Security Scanning
+        uses: navigaite/.github/.github/actions/security-scan@main
+
+  # =============================================================================
+  # LINT (Trunk Check)
+  # =============================================================================
+  lint:
+    name: 🧹 Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+
+      - name: 🔧 Setup Environment
+        uses: navigaite/.github/.github/actions/setup-environment@main
+        with:
+          stack: nodejs
+          write-summary: false
+
+      - name: 🧹 Trunk Check
+        uses: trunk-io/trunk-action@v1
+        with:
+          check-mode: all
+
+  # =============================================================================
+  # RELEASE MANAGEMENT (main branch only)
+  # =============================================================================
+  release:
+    name: 📦 Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    needs: [security, lint]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+
+      - name: 📦 Release Please
+        uses: navigaite/.github/.github/actions/release-management@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node
