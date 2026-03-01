@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.0.49](https://github.com/navigaite/nvgt-trunk-plugin/compare/v5.0.48...v5.0.49) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** correct universal pipeline path and remove broken app tokens ([c463ca0](https://github.com/navigaite/nvgt-trunk-plugin/commit/c463ca036fef63705c8a9e178e24032a83fa82df))
+* **ci:** replace reusable workflow with direct trunk-action ([2f9529e](https://github.com/navigaite/nvgt-trunk-plugin/commit/2f9529e061b9b5458ca260c2d4ca0eddb8579edf))
+* **ci:** security scan on PRs only, decouple release from security ([5bcd589](https://github.com/navigaite/nvgt-trunk-plugin/commit/5bcd58957f7cf130e298f7789b35338ea8c5c35d))
+* **ci:** switch to navigaite universal pipeline (reusable workflow) ([d7ab904](https://github.com/navigaite/nvgt-trunk-plugin/commit/d7ab9043c89c90611537f54725aa7753d492e276))
+* **ci:** use [@main](https://github.com/main) ref for universal pipeline (test tag resolution) ([19ac5dd](https://github.com/navigaite/nvgt-trunk-plugin/commit/19ac5dd902e1190f3bbf575a221ff34c7e0f3474))
+* **ci:** use shared composite actions instead of reusable workflow ([b2d9a35](https://github.com/navigaite/nvgt-trunk-plugin/commit/b2d9a35565a3d108c67fc19e4ffce7dd14bb2863))
+* remove trivy (releases wiped from GitHub), replace with osv-scanner in nightly audit ([baca6b0](https://github.com/navigaite/nvgt-trunk-plugin/commit/baca6b0c52d8e3b47d8cb2df0c078328cfd6a09f))
+* resolve all trunk check lint issues ([81af645](https://github.com/navigaite/nvgt-trunk-plugin/commit/81af645498ad6a1ad7f8bbdbdcbf260cab4c4eb0))
+
 ## [6.0.0] - 2026-03-01
 
 ### Breaking Changes
