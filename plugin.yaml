@@ -83,7 +83,6 @@ lint:
     # --- Security ---
     - trufflehog@3.91.2
     - semgrep@1.145.0
-    - trivy@0.68.1
     - osv-scanner@2.3.0
 
     # --- CI / Config ---

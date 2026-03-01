@@ -62,19 +62,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # 0.34.1
+      - name: Run OSV-Scanner vulnerability check
+        uses: google/osv-scanner-action@v2.3.3
         with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-results.sarif
+          scan-args: |-
+            --recursive
+            .
 
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
+      - name: Run TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@main
         with:
-          sarif_file: trivy-results.sarif
+          extra_args: --only-verified
 
   dependency-check:
     name: 📦 Dependency Health Check
