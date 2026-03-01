@@ -140,7 +140,25 @@ jobs:
       - name: 🔢 Bump version
         id: bump
         run: |
-          NEW_VERSION=$(npm version patch --no-git-tag-version)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          RANGE="HEAD"
+          if [[ -n "$LAST_TAG" ]]; then
+            RANGE="${LAST_TAG}..HEAD"
+          fi
+
+          # Semantic bump rules:
+          # - major: any BREAKING CHANGE or conventional "type(scope)!:" commit
+          # - minor: any conventional "feat" commit
+          # - patch: default
+          BUMP_TYPE="patch"
+          if git log "$RANGE" --format='%s%n%b' | grep -Eiq 'BREAKING CHANGE:|^[a-z]+(\([^)]+\))?!:'; then
+            BUMP_TYPE="major"
+          elif git log "$RANGE" --format='%s' | grep -Eiq '^feat(\([^)]+\))?:'; then
+            BUMP_TYPE="minor"
+          fi
+
+          NEW_VERSION=$(npm version "$BUMP_TYPE" --no-git-tag-version)
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: 💾 Commit and tag
@@ -182,5 +200,6 @@ jobs:
         run: |
           echo "### 📦 Release Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Bump Type:** ${{ steps.bump.outputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "**Tag:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY
