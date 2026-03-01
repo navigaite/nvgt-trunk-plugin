@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   pipeline:
-    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v2
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@main
     with:
       config-file: .github/pipeline.yaml
     secrets: inherit
