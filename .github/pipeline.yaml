@@ -24,7 +24,7 @@ test:
   enable: false
 
 build:
-  enable: false
+  enable: true
 
 deployment:
   provider: none
