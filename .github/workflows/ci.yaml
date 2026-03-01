@@ -9,19 +9,44 @@ on:
   merge_group: {}
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
   security-events: write
-  id-token: write
-  attestations: write
 
 concurrency:
   group: ${{ github.repository }}-pipeline-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  pipeline:
-    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@main
-    with:
-      config-file: .github/pipeline.yaml
-    secrets: inherit
+  trunk-check:
+    name: 🔍 Trunk Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Trunk Check
+        uses: trunk-io/trunk-action@v1
+        with:
+          check-mode: all
+
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔒 TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+      - name: 🔒 Dependency Review
+        uses: actions/dependency-review-action@v4
+        if: github.event_name == 'pull_request'
