@@ -1,4 +1,7 @@
 ---
+# Navigaite Universal CI/CD Pipeline
+# Docs: https://github.com/navigaite/.github/blob/main/docs/GETTING_STARTED.md
+
 name: CI/CD Pipeline
 
 on:
@@ -9,44 +12,15 @@ on:
   merge_group: {}
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   security-events: write
-
-concurrency:
-  group: ${{ github.repository }}-pipeline-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  id-token: write
 
 jobs:
-  trunk-check:
-    name: 🔍 Trunk Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: 🔍 Trunk Check
-        uses: trunk-io/trunk-action@v1
-        with:
-          check-mode: all
-
-  security-scan:
-    name: 🔒 Security Scan
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: 🔒 TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          extra_args: --only-verified
-
-      - name: 🔒 Dependency Review
-        uses: actions/dependency-review-action@v4
-        if: github.event_name == 'pull_request'
+  pipeline:
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v2
+    with:
+      config-file: .github/pipeline.yaml
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
