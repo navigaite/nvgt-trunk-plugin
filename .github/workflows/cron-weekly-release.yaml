@@ -1,0 +1,217 @@
+---
+name: 📦 Weekly Plugin Release
+
+on:
+  schedule:
+    # Every Monday at 9 AM UTC (after trunk-upgrade at 8 AM)
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (skip release creation)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  check-updates:
+    name: 🔍 Check for Updates
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+      new_version: ${{ steps.version.outputs.new_version }}
+    steps:
+      - name: 🔑 Generate App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: 🔍 Check for changes since last release
+        id: check
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -z "$LAST_TAG" ]]; then
+            echo "No previous tag found, treating as first release"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CHANGES=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges)
+          if [[ -z "$CHANGES" ]]; then
+            echo "No changes since $LAST_TAG"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes found since $LAST_TAG:"
+            echo "$CHANGES"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📝 Generate changelog
+        id: changelog
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          {
+            echo "changelog<<CHANGELOG_EOF"
+
+            # Collect linter version changes from commits
+            UPGRADE_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="trunk-upgrade" || true)
+            if [[ -n "$UPGRADE_COMMITS" ]]; then
+              echo "### ⬆️ Tool Updates"
+              echo ""
+              echo "$UPGRADE_COMMITS" | while read -r line; do
+                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
+                echo "- $MSG"
+              done
+              echo ""
+            fi
+
+            # Collect feature commits
+            FEAT_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="^feat" || true)
+            if [[ -n "$FEAT_COMMITS" ]]; then
+              echo "### ✨ Features"
+              echo ""
+              echo "$FEAT_COMMITS" | while read -r line; do
+                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
+                echo "- $MSG"
+              done
+              echo ""
+            fi
+
+            # Collect fix commits
+            FIX_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="^fix" || true)
+            if [[ -n "$FIX_COMMITS" ]]; then
+              echo "### 🐛 Bug Fixes"
+              echo ""
+              echo "$FIX_COMMITS" | while read -r line; do
+                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
+                echo "- $MSG"
+              done
+              echo ""
+            fi
+
+            # Collect all other commits
+            OTHER_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges \
+              --grep="^feat" --grep="^fix" --grep="trunk-upgrade" --invert-grep || true)
+            if [[ -n "$OTHER_COMMITS" ]]; then
+              echo "### 🔧 Maintenance"
+              echo ""
+              echo "$OTHER_COMMITS" | while read -r line; do
+                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
+                echo "- $MSG"
+              done
+              echo ""
+            fi
+
+            # Show current tool versions summary
+            echo "### 📋 Current Tool Versions"
+            echo ""
+            echo "| Category | Tools |"
+            echo "|----------|-------|"
+            echo "| **Runtimes** | Go 1.23.6, Node 22.16.0, Python 3.13.2, Ruby 3.4.2 |"
+
+            # Extract enabled linter versions from plugin.yaml
+            LINTERS=$(grep -E '^\s+- \w' plugin.yaml | grep '@' | sed 's/.*- //' | sed 's/:$//' | sed 's/!$//' | sort)
+            LINTER_COUNT=$(echo "$LINTERS" | wc -l | tr -d ' ')
+            echo "| **Linters** | $LINTER_COUNT tools enabled |"
+            echo ""
+
+            echo "CHANGELOG_EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: 🔢 Bump version
+        id: version
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          NEW_VERSION=$(npm version patch --no-git-tag-version)
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+  create-release:
+    name: 🚀 Create Release
+    runs-on: ubuntu-latest
+    needs: check-updates
+    if: needs.check-updates.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
+    steps:
+      - name: 🔑 Generate App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: 👤 Configure git
+        run: |
+          git config --global user.name "navigaite-workflow-app[bot]"
+          git config --global user.email "133966083+navigaite-workflow-app[bot]@users.noreply.github.com"
+
+      - name: 🔢 Bump version
+        id: bump
+        run: |
+          NEW_VERSION=$(npm version patch --no-git-tag-version)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: 💾 Commit and tag
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore(release): ${{ steps.bump.outputs.version }}"
+          git tag "${{ steps.bump.outputs.version }}"
+          git push origin main --tags
+
+      - name: 📦 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.version }}
+          name: ${{ steps.bump.outputs.version }}
+          body: |
+            ## 📦 Weekly Plugin Release — ${{ steps.bump.outputs.version }}
+
+            ${{ needs.check-updates.outputs.changelog }}
+
+            ---
+
+            ### 🔗 Usage
+
+            Update your `.trunk/trunk.yaml` to use this version:
+
+            ```yaml
+            plugins:
+              sources:
+                - id: navigaite
+                  uri: https://github.com/navigaite/nvgt-trunk-plugin
+                  ref: ${{ steps.bump.outputs.version }}
+            ```
+
+            ---
+            _Automated weekly release by Navigaite CI/CD_
+          generate_release_notes: false
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: 📊 Release Summary
+        run: |
+          echo "### 📦 Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY

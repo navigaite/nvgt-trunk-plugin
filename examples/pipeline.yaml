@@ -1,0 +1,59 @@
+---
+# Example .github/pipeline.yaml for the Navigaite universal pipeline.
+# Copy this to your project's .github/pipeline.yaml and adjust as needed.
+# See https://github.com/navigaite/github-organization for full schema documentation.
+
+version: '2.0'
+
+# Tech stack auto-detection from package.json / requirements.txt / pubspec.yaml
+# Optionally specify explicitly:
+# stack: nodejs
+# runtime:
+#   node_version: "22"
+
+pipeline:
+  fail_fast: false
+  enable_caching: true
+
+security:
+  enable: true
+  trufflehog: true
+  dependency_review: true
+  fail_on_secrets: true
+  fail_on_vulnerabilities: false
+
+lint:
+  enable: true
+  # Uses Trunk if .trunk/trunk.yaml exists, otherwise falls back to stack-specific linters
+
+test:
+  enable: true
+  coverage: true
+
+build:
+  enable: true
+  upload_artifacts: false
+
+deployment:
+  provider: none
+  # provider: vercel
+  # provider: docker
+  # provider: digitalocean
+
+  # environments:
+  #   - name: preview
+  #     trigger:
+  #       event: pull_request
+  #     auto_deploy: true
+  #   - name: production
+  #     trigger:
+  #       event: push
+  #       branch: main
+  #     auto_deploy: true
+
+release:
+  enable: true
+  type: node # node | python | simple
+  bump_minor_pre_major: true
+  # sync_to_dev: true
+  # sync_target_branch: dev

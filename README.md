@@ -1,63 +1,52 @@
 # Navigaite Trunk Plugin
 
 [![Trunk](https://img.shields.io/badge/Trunk-Powered-brightgreen)](https://trunk.io)
-[![Version](https://img.shields.io/badge/Version-v5.0.8-blue)](https://github.com/Navigaite/nvgt-trunk-plugin/releases)
-[![Last Updated](https://img.shields.io/badge/Last%20Updated-June%202025-success)](https://github.com/Navigaite/nvgt-trunk-plugin)
-[![Linters](https://img.shields.io/badge/Linters-45%2B-yellow)](https://github.com/Navigaite/nvgt-trunk-plugin)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 
-A centralized configuration plugin for [Trunk](https://trunk.io) that standardizes linting, formatting, and code checking across Navigaite
-projects.
+A centralized [Trunk](https://trunk.io) plugin that standardizes linting, formatting, and security scanning across all
+Navigaite projects.
 
 ## Overview
 
-This plugin provides a unified set of linting rules, configurations, and actions that can be easily shared across multiple repositories
-within the Navigaite ecosystem. By sourcing this plugin, repositories automatically inherit our standardized development workflows and
-quality controls.
+This plugin provides a unified set of linting rules, configurations, and actions that can be shared across multiple
+repositories. By sourcing this plugin, repositories automatically inherit standardized development workflows and quality
+controls.
 
 ## Features
 
-- **Standardized Linting**: Pre-configured rules for 45+ linters covering multiple languages and frameworks
-- **Modern Tooling**: Includes modern tools like `commitlint`, `knip`, and `dependency-cruiser`
-- **Shared Configurations**: Centrally managed config files for all major code quality tools
+- **40+ Linters**: Pre-configured for multiple languages and frameworks
+- **Shared Configurations**: 19 centrally managed config files for all major tools
 - **Runtime Environments**: Built-in support for Go, Node.js, Python, and Ruby
-- **Git Hooks**: Pre-configured hooks for code formatting and quality checks
-- **CI/CD Integration**: Ready for CI/CD integration with GitHub Actions workflow examples
-- **Security Focus**: Comprehensive security scanning with tools like Semgrep, Bandit, and Trivy
+- **Git Hooks**: Pre-commit formatting and pre-push quality checks
+- **Security Scanning**: Secret detection, vulnerability scanning, and SAST
+- **CI/CD Integration**: Universal pipeline with automated weekly releases
+- **Automated Updates**: Trunk tool versions are upgraded automatically via scheduled workflows
 
-## Supported Languages & Frameworks
+## Supported Languages & Tools
 
-The plugin provides standardized configurations for:
-
-- **JavaScript/TypeScript**: ESLint, Prettier, Knip (unused code detection)
-- **Python**: Ruff (comprehensive linting), Black (formatting), Pylint, MyPy, Bandit (security)
-- **Go**: Gofmt, Golangci-lint
-- **Ruby**: Rubocop
-- **Rust**: Rustfmt, Clippy
-- **Docker**: Hadolint (Dockerfile linting)
-- **Infrastructure**: Terraform (Checkov), CloudFormation (CFNLint)
-- **Security**: Gitleaks, Semgrep, Trivy, OSV-Scanner
-- **Documentation**: Markdownlint, Vale
-- **And many more!
-
-## New Tools Added
-
-### Modern Development Tools
-- **Commitlint**: Enforce conventional commit message format
-- **Knip**: Find unused files, dependencies, and exports in JavaScript/TypeScript projects
-- **Dependency Cruiser**: Validate and visualize dependencies
-
-### Enhanced Security
-- Comprehensive security scanning with multiple tools
-- Dependency vulnerability scanning
-- Secret detection in code
+| Category                  | Tools                                                         |
+| ------------------------- | ------------------------------------------------------------- |
+| **JavaScript/TypeScript** | ESLint, Prettier, Stylelint, Biome                            |
+| **Python**                | Ruff (linting + formatting + import sorting + security), MyPy |
+| **Go**                    | gofmt, golangci-lint                                          |
+| **Ruby**                  | RuboCop                                                       |
+| **Rust**                  | rustfmt, Clippy                                               |
+| **C/C++**                 | clang-format, clang-tidy                                      |
+| **Shell**                 | ShellCheck, shfmt                                             |
+| **Docker**                | Hadolint                                                      |
+| **Infrastructure**        | Checkov, Terrascan, CFN-Lint, Buildifier                      |
+| **Security**              | TruffleHog, Semgrep, Trivy, OSV-Scanner                       |
+| **Data Formats**          | yamllint, taplo (TOML), sql-formatter, Prisma                 |
+| **Documentation**         | markdownlint, markdown-link-check                             |
+| **CI/Config**             | actionlint, Renovate, dotenv-linter                           |
+| **Images**                | oxipng, SVGO                                                  |
 
 ## Usage
 
 ### Adding to a Repository
 
-1. Install the Trunk CLI following the [official documentation](https://docs.trunk.io)
-2. In your repository root, initialize Trunk:
+1. Install the [Trunk CLI](https://docs.trunk.io/code-quality/setup-and-installation)
+2. Initialize Trunk in your repository:
    ```bash
    trunk init
    ```
@@ -67,49 +56,75 @@ The plugin provides standardized configurations for:
      sources:
        - id: navigaite
          uri: https://github.com/navigaite/nvgt-trunk-plugin
-         ref: v5.0.8 # or main for latest
+         ref: v5.0.25
    ```
-4. Run `trunk check` to validate the installation
-
-## Quick Start Examples
+4. Run `trunk check` to validate
 
 ### For New Projects
-Copy the example configuration from `examples/trunk.yaml` to `.trunk/trunk.yaml` in your repository and adjust as needed.
+
+Copy the example configuration from [`examples/trunk.yaml`](examples/trunk.yaml) to `.trunk/trunk.yaml` and adjust as
+needed. Disable linters that don't apply to your stack.
 
 ### For CI/CD Integration
-Use the example GitHub Actions workflow from `examples/github-actions-trunk.yml` to set up automated code quality checks.
 
-## Available Configurations
+Use the Navigaite universal pipeline. See [`examples/github-actions-ci.yaml`](examples/github-actions-ci.yaml) for a
+ready-to-use workflow, and [`examples/pipeline.yaml`](examples/pipeline.yaml) for the pipeline configuration.
 
-This plugin exports a variety of shared configurations in the `configs/` directory:
+## Shared Configurations
 
-- `.commitlintrc.json` - Conventional commit message linting
-- `.dependency-cruiser.json` - Dependency validation and visualization
-- `knip.json` - Unused code detection for JavaScript/TypeScript
-- `.prettierrc` - Formatting rules for JavaScript/TypeScript
-- `ruff.toml` - Comprehensive Python linting with Ruff
-- `.stylelintrc.json` - CSS/SCSS styling rules with Tailwind support
-- `.yamllint.yaml` - YAML linting configuration
-- And many more!
+All configurations are exported from the `configs/` directory:
+
+| Config               | Tool         | Purpose                                                        |
+| -------------------- | ------------ | -------------------------------------------------------------- |
+| `.prettierrc`        | Prettier     | JS/TS formatting (120 char width, single quotes)               |
+| `biome.json`         | Biome        | JS/TS linting and formatting                                   |
+| `ruff.toml`          | Ruff         | Python linting (replaces black, isort, pylint, bandit, flake8) |
+| `.stylelintrc.json`  | Stylelint    | CSS/SCSS linting with Tailwind support                         |
+| `.yamllint.yaml`     | yamllint     | YAML validation                                                |
+| `.markdownlint.yaml` | markdownlint | Markdown linting                                               |
+| `.shellcheckrc`      | ShellCheck   | Shell script linting                                           |
+| `.checkov.yaml`      | Checkov      | IaC security scanning                                          |
+| `.hadolint.yaml`     | Hadolint     | Dockerfile linting                                             |
+| `rustfmt.toml`       | rustfmt      | Rust formatting                                                |
+| `knip.json`          | Knip         | Unused code detection (JS/TS)                                  |
+| `.cspell.json`       | CSpell       | Spell checking (EN + DE)                                       |
+| `svgo.config.mjs`    | SVGO         | SVG optimization                                               |
 
 ## Actions
 
 The following Trunk actions are enabled by default:
 
-- `trunk-check-pre-push` - Run checks before git push
-- `trunk-fmt-pre-commit` - Format code before commits
-- `trunk-upgrade-available` - Notification for available upgrades
-- `trunk-cache-prune` - Automatic cache maintenance
+| Action                    | Trigger    | Purpose                                |
+| ------------------------- | ---------- | -------------------------------------- |
+| `trunk-fmt-pre-commit`    | Pre-commit | Format staged files automatically      |
+| `trunk-check-pre-push`    | Pre-push   | Run full quality checks before pushing |
+| `trunk-upgrade-available` | Background | Notify when upgrades are available     |
+| `trunk-cache-prune`       | Background | Automatic cache maintenance            |
 
-## Maintenance
+## CI/CD Workflows
 
-This plugin includes a GitHub workflow that automatically checks for Trunk updates weekly and creates pull requests as needed.
+| Workflow                | Schedule         | Purpose                                   |
+| ----------------------- | ---------------- | ----------------------------------------- |
+| **CI Pipeline**         | Push/PR to main  | Universal pipeline (lint, security)       |
+| **Trunk Upgrade**       | Mon/Fri 8 AM UTC | Auto-upgrade linter versions              |
+| **Weekly Release**      | Monday 9 AM UTC  | Create release with changelog             |
+| **Automerge**           | On PR events     | Auto-merge labeled PRs                    |
+| **Nightly Maintenance** | Daily 2 AM UTC   | Cleanup, security audit, dependency check |
+
+## Runtimes
+
+| Runtime | Version |
+| ------- | ------- |
+| Go      | 1.23.6  |
+| Node.js | 22.16.0 |
+| Python  | 3.13.3  |
+| Ruby    | 3.4.2   |
 
 ## Contributing
 
 1. Fork this repository
 2. Make your changes
-3. Test your changes with `trunk check`
+3. Test with `trunk check`
 4. Submit a pull request
 
 ## License

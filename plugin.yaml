@@ -1,18 +1,19 @@
 ---
-# This is the main trunk plugin file for // Navigaite.
-# It it used to configure
+# Navigaite Trunk Plugin
+# Centralized linting, formatting, and security configuration for all Navigaite projects.
+# https://github.com/navigaite/nvgt-trunk-plugin
 
 version: 0.1
-required_trunk_version: '>= 1.6.8'
+required_trunk_version: '>= 1.22.0'
 cli:
   version: 1.22.12
 
 # Applicable linters and actions will run with these runtime versions
 runtimes:
   enabled:
-    - go@1.21.7
+    - go@1.23.6
     - node@22.16.0
-    - python@3.12.2
+    - python@3.13.3
     - ruby@3.4.2
 
 lint:
@@ -20,82 +21,107 @@ lint:
     - name: eslint
       commands:
         - name: lint
-          run_when: [cli, monitor, ci] # do not run from lsp (maybe too slow)
+          run_when: [cli, monitor, ci] # do not run from lsp (may be too slow)
 
   enabled:
-    - actionlint@1.7.9
-    - bandit@1.9.2
-    - black@25.12.0
-    - buf-lint@1.31.0!
-    - buildifier@8.2.1
-    - cfnlint@1.42.0
-    - checkov@3.2.495
-    - clang-format@17.0.1
-    - clang-tidy@17.0.1
-    - clippy@1.71.1
-    - dotenv-linter@4.0.0
-    - dustilock@1.2.0
+    # --- JavaScript / TypeScript ---
     - eslint@9.39.1
-    - git-diff-check
-    - gitleaks@8.30.0
-    - gofmt@1.20.4
-    - golangci-lint@2.7.2
-    - hadolint@2.14.0
-    - isort@7.0.0
-    - markdownlint@0.46.0
-    - markdown-link-check@3.13.7
-    - mypy@1.19.0
-    - nancy@1.0.52
-    - osv-scanner@2.3.0
-    - oxipng@10.0.0
-    - pragma-once
     - prettier@3.7.4:
         packages:
           - prettier-plugin-tailwindcss@0.7.2
-    - prisma@7.1.0
-    - pylint@4.0.4
-    - renovate@42.39.4
-    - rubocop@1.39.0
-    - ruff@0.14.8
-    - rustfmt@1.68.2
-    - semgrep@1.145.0
-    - shellcheck@0.11.0
-    - shfmt@3.6.0
-    - sort-package-json@3.5.0
-    - sql-formatter@15.6.10
     - stylelint@16.26.1:
         packages:
           - stylelint-config-standard@39.0.1
           - stylelint-config-tailwindcss@1.0.0
           - stylelint-config-clean-order@8.0.0
+    - sort-package-json@3.5.0
     - svgo@4.0.0
-    - taplo@0.10.0
+
+    # --- Python (ruff replaces black, isort, pylint, bandit, flake8) ---
+    - ruff@0.14.8
+    - mypy@1.19.0
+
+    # --- Go ---
+    - gofmt@1.20.4
+    - golangci-lint@2.7.2
+
+    # --- Ruby ---
+    - rubocop@1.39.0
+
+    # --- Rust ---
+    - rustfmt@1.68.2
+    - clippy@1.71.1
+
+    # --- C/C++ ---
+    - clang-format@17.0.1
+    - clang-tidy@17.0.1
+    - pragma-once
+
+    # --- Shell ---
+    - shellcheck@0.11.0
+    - shfmt@3.6.0
+
+    # --- Docker ---
+    - hadolint@2.14.0
+
+    # --- Infrastructure as Code ---
+    - checkov@3.2.495
     - terrascan@1.19.9
-    - trivy@0.68.1
-    - trufflehog@3.91.2
+    - cfnlint@1.42.0
+    - buildifier@8.2.1
+
+    # --- Data formats ---
     - yamllint@1.37.1
+    - taplo@0.10.0
+    - sql-formatter@15.6.10
+    - prisma@7.1.0
+
+    # --- Documentation ---
+    - markdownlint@0.46.0
+    - markdown-link-check@3.13.7
+
+    # --- Security ---
+    - trufflehog@3.91.2
+    - semgrep@1.145.0
+    - trivy@0.68.1
+    - osv-scanner@2.3.0
+
+    # --- CI / Config ---
+    - actionlint@1.7.9
+    - renovate@42.39.4
+    - dotenv-linter@4.0.0
+    - dustilock@1.2.0
+    - nancy@1.0.52
+    - buf-lint@1.31.0!
+
+    # --- Images ---
+    - oxipng@10.0.0
+
+    # --- Git ---
+    - git-diff-check
 
   # Sourcing repos will have these configs available to applicable linters
   exported_configs:
     - configs:
         - configs/.checkov.yaml
+        - configs/.commitlintrc.json
         - configs/.cspell.json
-        - configs/.flake8
+        - configs/.dependency-cruiser.json
         - configs/.hadolint.yaml
-        - configs/.isort.cfg
         - configs/.markdownlint.yaml
         - configs/.npmcheckrc
         - configs/.prettierignore
         - configs/.prettierrc
-        - configs/.pylintrc
         - configs/.remarkrc.yaml
-        - configs/ruff.toml
-        - configs/rustfmt.toml
         - configs/.shellcheckrc
         - configs/.sqlfluff
         - configs/.stylelintrc.json
-        - configs/svgo.config.mjs
         - configs/.yamllint.yaml
+        - configs/biome.json
+        - configs/knip.json
+        - configs/ruff.toml
+        - configs/rustfmt.toml
+        - configs/svgo.config.mjs
 
   ignore:
     - linters: [trufflehog, osv-scanner]

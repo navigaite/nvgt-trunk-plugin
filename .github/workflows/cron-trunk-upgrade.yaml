@@ -3,36 +3,39 @@ name: 📅 Upgrade Trunk
 
 on:
   schedule:
-    # Weekly at midnight M/F morning
-    - cron: 0 8 * * 1,5
+    # Weekly on Monday and Friday at 8 AM UTC
+    - cron: '0 8 * * 1,5'
   workflow_dispatch: {}
 
 permissions:
-  contents: write # For trunk to create PRs
-  pull-requests: write # For trunk to create PRs
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   trunk_upgrade:
-    name: 🚀 Upgrade Trunk
+    name: ⬆️ Upgrade Trunk Tools
     runs-on: ubuntu-latest
     permissions:
-      contents: write # For trunk to create PRs
-      pull-requests: write # For trunk to create PRs
+      contents: write
+      pull-requests: write
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔑 Create App Token for TrunkBuild App (Internal)
-        uses: tibdex/github-app-token@v2
+      - name: 🔑 Generate App Token
         id: generate-token
+        uses: actions/create-github-app-token@v2
         with:
-          app_id: ${{ secrets.WORKFLOW_APP_ID }}
-          private_key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
 
-      - name: 🚀 Trunk Upgrade
-        id: trunk-upgrade
+      - name: ⬆️ Trunk Upgrade
         uses: trunk-io/trunk-action/upgrade@v1
         with:
           add-paths: plugin.yaml

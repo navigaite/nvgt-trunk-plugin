@@ -1,0 +1,35 @@
+---
+version: '2.0'
+
+stack: nodejs
+
+runtime:
+  node_version: '22'
+
+pipeline:
+  fail_fast: false
+  enable_caching: true
+
+security:
+  enable: true
+  trufflehog: true
+  dependency_review: true
+  fail_on_secrets: true
+  fail_on_vulnerabilities: false
+
+lint:
+  enable: true
+
+test:
+  enable: false
+
+build:
+  enable: false
+
+deployment:
+  provider: none
+
+release:
+  enable: true
+  type: node
+  bump_minor_pre_major: true

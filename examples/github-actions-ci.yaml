@@ -1,0 +1,33 @@
+---
+# Example CI/CD workflow using the Navigaite universal pipeline.
+# Copy this to your project's .github/workflows/ci.yaml.
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  merge_group: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+  packages: write
+  id-token: write
+  attestations: write
+  security-events: write
+
+jobs:
+  pipeline:
+    uses: navigaite/github-organization/.github/workflows/universal-pipeline.yaml@v2
+    with:
+      config-file: .github/pipeline.yaml
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # Add deployment secrets as needed:
+      # VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      # VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
