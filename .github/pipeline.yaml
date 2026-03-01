@@ -33,3 +33,4 @@ release:
   enable: true
   type: node
   bump_minor_pre_major: true
+  sync_to_dev: false
