@@ -16,3 +16,6 @@ plugins:
 lint:
   disabled:
     - markdown-link-check
+  ignore:
+    - linters: [markdownlint]
+      paths: [CHANGELOG.md]
