@@ -1,0 +1,38 @@
+---
+name: Create Release PR
+
+run-name: 'Create Release PR | ${{ github.actor }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: Source branch for the release PR
+        required: true
+        default: dev
+        type: string
+      target_branch:
+        description: Target branch for the release PR
+        required: true
+        default: main
+        type: string
+      draft:
+        description: Create as draft PR
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    name: Create or Update Release PR
+    uses: navigaite/.github/.github/workflows/create-release-pr.yaml@main
+    with:
+      source_branch: ${{ inputs.source_branch }}
+      target_branch: ${{ inputs.target_branch }}
+      draft: ${{ inputs.draft }}
+    secrets:
+      release_pr_token: ${{ secrets.RELEASE_PR_TOKEN || secrets.GH_TOKEN }}

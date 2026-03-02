@@ -1,0 +1,30 @@
+---
+name: Navigaite CI/CD / Release
+
+run-name: '${{ github.workflow }} | ${{ github.actor }}'
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+  packages: write
+  id-token: write
+  attestations: write
+  security-events: write
+  issues: read
+
+concurrency:
+  group: ${{ github.repository }}-ci-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: 🚀 Release
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@main
+    with:
+      config-file: .github/pipeline.yaml
+    secrets: inherit

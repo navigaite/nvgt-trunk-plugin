@@ -1,0 +1,17 @@
+---
+name: 🌙 Nightly Maintenance
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  actions: write
+  contents: read
+  security-events: write
+
+jobs:
+  nightly-maintenance:
+    name: 🌙 Run Nightly Maintenance
+    uses: navigaite/.github/.github/workflows/nightly-maintenance.yaml@main

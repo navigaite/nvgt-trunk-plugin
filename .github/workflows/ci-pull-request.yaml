@@ -1,0 +1,31 @@
+---
+name: Navigaite CI/CD / Pull Request
+
+run-name: '${{ github.workflow }} | ${{ github.actor }}'
+
+on:
+  pull_request:
+    branches: [main, dev]
+  merge_group: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+  packages: write
+  id-token: write
+  attestations: write
+  security-events: write
+  issues: read
+
+concurrency:
+  group: ${{ github.repository }}-ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: 🚦 CI
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@main
+    with:
+      config-file: .github/pipeline.yaml
+    secrets: inherit
