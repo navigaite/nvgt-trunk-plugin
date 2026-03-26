@@ -1,1 +1,23 @@
+# shadcn generated components
 **/shadcn/*.tsx
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Generated code
+*.generated.ts
+*.generated.tsx
+*.generated.js
+*.min.js
+*.min.css
+
+# Lock files (formatted by their own tools)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Changelog (auto-generated)
+CHANGELOG.md

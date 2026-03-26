@@ -63,12 +63,37 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run OSV-Scanner vulnerability check
+        id: osv-scanner
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.3
         continue-on-error: true
         with:
           scan-args: |-
             --recursive
             .
+
+      - name: Create issue on vulnerability findings
+        if: steps.osv-scanner.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔒 OSV-Scanner: vulnerabilities detected (${new Date().toISOString().split('T')[0]})`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 100,
+            });
+            const existing = issues.find(i => i.title.startsWith('🔒 OSV-Scanner:'));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: `The nightly OSV-Scanner security audit found vulnerabilities.\n\nSee the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.\n\nThis issue was created automatically by the nightly maintenance workflow.`,
+                labels: ['security'],
+              });
+            }
 
       - name: Run TruffleHog secret scan
         uses: trufflesecurity/trufflehog@main
