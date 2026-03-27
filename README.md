@@ -73,6 +73,12 @@ needed. Disable linters that don't apply to your stack.
 Use the Navigaite universal pipeline. See [`examples/github-actions-ci.yaml`](examples/github-actions-ci.yaml) for a
 ready-to-use workflow, and [`examples/pipeline.yaml`](examples/pipeline.yaml) for the pipeline configuration.
 
+### AI Code Review (Optional)
+
+Add automated code review to PRs using [Claude Code Action](https://github.com/anthropics/claude-code-action). See
+[`examples/claude-code-review.yaml`](examples/claude-code-review.yaml) for a ready-to-use workflow. Requires an
+`ANTHROPIC_API_KEY` secret in your repository.
+
 ## Shared Configurations
 
 All configurations are exported from the `configs/` directory:

@@ -1,0 +1,38 @@
+---
+# Example workflow for automated AI code review using Claude Code Action.
+# Copy this to your project's .github/workflows/claude-code-review.yaml.
+# Requires ANTHROPIC_API_KEY secret set in your repository or organization.
+#
+# See: https://github.com/anthropics/claude-code-action
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  claude-review:
+    # Run on PR events, or on issue comments that mention @claude
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Optional: customize the review prompt
+          # direct_prompt: "Review this PR for security issues, performance, and code quality."
+          # Optional: allow Claude to use specific tools
+          # allowed_tools: "Bash(git log:*),Bash(npm test:*),Read,Glob,Grep"
+          # Optional: set a custom model
+          # model: "claude-sonnet-4-6-20250514"
