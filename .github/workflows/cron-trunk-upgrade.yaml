@@ -33,7 +33,7 @@ jobs:
         with:
           add-paths: plugin.yaml
           arguments: --apply-to=plugin.yaml -n
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           base: main
           prefix: 'ci(trunk-upgrade): '
           labels: automerge
