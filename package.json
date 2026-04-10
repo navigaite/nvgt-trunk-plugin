@@ -1,6 +1,6 @@
 {
   "name": "nvgt-trunk-plugin",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "Navigaite Trunk Plugin — centralized linting, formatting, and security configuration",
   "homepage": "https://navigaite.de",
   "repository": {
