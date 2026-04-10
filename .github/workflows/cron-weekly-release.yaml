@@ -124,13 +124,14 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
       - name: 👤 Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: 🧹 Close stale release PRs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           mapfile -t PR_NUMBERS < <(
             gh pr list \
@@ -172,7 +173,7 @@ jobs:
           NEW_VERSION=$(npm version "$BUMP_TYPE" --no-git-tag-version)
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-      - name: 💾 Commit and tag
+      - name: 💾 Commit, tag, and push
         run: |
           git add package.json package-lock.json
           git commit -m "chore(release): ${{ steps.bump.outputs.version }}"
@@ -180,6 +181,8 @@ jobs:
           git push origin main --tags
       - name: 📦 Create GitHub Release
         uses: softprops/action-gh-release@v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.bump.outputs.version }}
           name: ${{ steps.bump.outputs.version }}
