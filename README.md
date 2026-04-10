@@ -15,7 +15,7 @@ controls.
 ## Features
 
 - **40+ Linters**: Pre-configured for multiple languages and frameworks
-- **Shared Configurations**: 19 centrally managed config files for all major tools
+- **Shared Configurations**: Centrally managed config files for all major tools
 - **Runtime Environments**: Built-in support for Go, Node.js, Python, and Ruby
 - **Git Hooks**: Pre-commit formatting and pre-push quality checks
 - **Security Scanning**: Secret detection, vulnerability scanning, and SAST
@@ -35,8 +35,8 @@ controls.
 | **Shell**                 | ShellCheck, shfmt                                             |
 | **Docker**                | Hadolint                                                      |
 | **Infrastructure**        | Checkov, Terrascan, CFN-Lint, Buildifier                      |
-| **Security**              | TruffleHog, Semgrep, Trivy, OSV-Scanner                       |
-| **Data Formats**          | yamllint, taplo (TOML), sql-formatter, Prisma                 |
+| **Security**              | TruffleHog, Semgrep, OSV-Scanner                              |
+| **Data Formats**          | yamllint, yamlfmt, taplo (TOML), sql-formatter, Prisma        |
 | **Documentation**         | markdownlint, markdown-link-check                             |
 | **CI/Config**             | actionlint, Renovate, dotenv-linter                           |
 | **Images**                | oxipng, SVGO                                                  |
@@ -54,9 +54,12 @@ controls.
    ```yaml
    plugins:
      sources:
+       - id: trunk
+         uri: https://github.com/trunk-io/plugins
+         ref: v1.7.6
        - id: navigaite
          uri: https://github.com/navigaite/nvgt-trunk-plugin
-         ref: v5.0.25
+         ref: v5.1.0
    ```
 4. Run `trunk check` to validate
 
@@ -70,6 +73,12 @@ needed. Disable linters that don't apply to your stack.
 Use the Navigaite universal pipeline. See [`examples/github-actions-ci.yaml`](examples/github-actions-ci.yaml) for a
 ready-to-use workflow, and [`examples/pipeline.yaml`](examples/pipeline.yaml) for the pipeline configuration.
 
+### AI Code Review (Optional)
+
+Add automated code review to PRs using [Claude Code Action](https://github.com/anthropics/claude-code-action). See
+[`examples/claude-code-review.yaml`](examples/claude-code-review.yaml) for a ready-to-use workflow. Requires an
+`ANTHROPIC_API_KEY` secret in your repository.
+
 ## Shared Configurations
 
 All configurations are exported from the `configs/` directory:
@@ -77,18 +86,46 @@ All configurations are exported from the `configs/` directory:
 | Config               | Tool         | Purpose                                                        |
 | -------------------- | ------------ | -------------------------------------------------------------- |
 | `.prettierrc`        | Prettier     | JS/TS formatting (120 char width, single quotes)               |
-| `biome.json`         | Biome        | JS/TS linting and formatting                                   |
+| `.prettierignore`    | Prettier     | Ignore patterns for generated code, build output, lock files   |
+| `biome.json`         | Biome        | JS/TS linting and formatting (alternative to Prettier+ESLint)  |
 | `ruff.toml`          | Ruff         | Python linting (replaces black, isort, pylint, bandit, flake8) |
-| `.stylelintrc.json`  | Stylelint    | CSS/SCSS linting with Tailwind support                         |
+| `.stylelintrc.json`  | Stylelint    | CSS/SCSS linting with Tailwind v3/v4 support                   |
+| `.yamlfmt`           | yamlfmt      | YAML formatting (document-start, 120 char width)               |
 | `.yamllint.yaml`     | yamllint     | YAML validation                                                |
 | `.markdownlint.yaml` | markdownlint | Markdown linting                                               |
 | `.shellcheckrc`      | ShellCheck   | Shell script linting                                           |
 | `.checkov.yaml`      | Checkov      | IaC security scanning                                          |
 | `.hadolint.yaml`     | Hadolint     | Dockerfile linting                                             |
 | `rustfmt.toml`       | rustfmt      | Rust formatting                                                |
-| `knip.json`          | Knip         | Unused code detection (JS/TS)                                  |
 | `.cspell.json`       | CSpell       | Spell checking (EN + DE)                                       |
 | `svgo.config.mjs`    | SVGO         | SVG optimization                                               |
+
+### Biome vs Prettier + ESLint
+
+This plugin ships configurations for both **Biome** and **Prettier + ESLint**. They serve the same purpose (JS/TS
+formatting and linting) but have different trade-offs:
+
+| Aspect        | Biome                                 | Prettier + ESLint                             |
+| ------------- | ------------------------------------- | --------------------------------------------- |
+| **Speed**     | Much faster (Rust-based, single tool) | Slower (two separate Node.js tools)           |
+| **Ecosystem** | Growing, fewer plugins                | Mature, extensive plugin ecosystem            |
+| **Tailwind**  | No class sorting plugin yet           | `prettier-plugin-tailwindcss` for class sort  |
+| **Adoption**  | Good for new/greenfield projects      | Best for existing projects with ESLint config |
+
+**Recommendation:**
+
+- **New projects without Tailwind:** Use Biome. Disable `eslint` and `prettier` in your `trunk.yaml`.
+- **Projects using Tailwind CSS:** Use Prettier + ESLint. The Tailwind class sorting plugin is essential.
+- **Existing projects with ESLint configs:** Stay with Prettier + ESLint to keep custom rules.
+
+To switch to Biome, add to your project's `.trunk/trunk.yaml`:
+
+```yaml
+lint:
+  disabled:
+    - eslint
+    - prettier
+```
 
 ## Actions
 

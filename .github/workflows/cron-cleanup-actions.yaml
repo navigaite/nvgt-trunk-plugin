@@ -1,13 +1,10 @@
 ---
 name: 🌙 Nightly Maintenance
-
 on:
   schedule:
     - cron: 0 2 * * *
   workflow_dispatch: {}
-
 permissions: {}
-
 jobs:
   cleanup-workflow-runs:
     name: 🧹 Cleanup Old Workflow Runs
@@ -23,7 +20,6 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 30
           keep_minimum_runs: 10
-
   cleanup-caches:
     name: 🗑️ Cleanup Old Caches
     runs-on: ubuntu-latest
@@ -34,7 +30,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
       - name: Cleanup old caches
         run: |
           echo "::group::🔍 Listing caches"
@@ -50,7 +45,6 @@ jobs:
           echo "✅ Cache cleanup completed"
         env:
           GH_TOKEN: ${{ github.token }}
-
   security-audit:
     name: 🔒 Security Audit
     runs-on: ubuntu-latest
@@ -61,20 +55,48 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
       - name: Run OSV-Scanner vulnerability check
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.3
+        id: osv-scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.5
         continue-on-error: true
         with:
           scan-args: |-
             --recursive
             .
-
+      - name: Create issue on vulnerability findings
+        if: steps.osv-scanner.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔒 OSV-Scanner: vulnerabilities detected (${new Date().toISOString().split('T')[0]})`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 100,
+            });
+            const existing = issues.find(i => i.title.startsWith('🔒 OSV-Scanner:'));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: [
+                  'The nightly OSV-Scanner security audit found vulnerabilities.',
+                  '',
+                  `See the [workflow run](${context.serverUrl}/${context.repo.owner}` +
+                  `/${context.repo.repo}/actions/runs/${context.runId}) for details.`,
+                  '',
+                  'This issue was created automatically by the nightly maintenance workflow.',
+                ].join('\n'),
+                labels: ['security'],
+              });
+            }
       - name: Run TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.94.3
         with:
           extra_args: --only-verified
-
   dependency-check:
     name: 📦 Dependency Health Check
     runs-on: ubuntu-latest
@@ -84,7 +106,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
       - name: Check for outdated dependencies
         run: |
           echo "### 📦 Dependency Health Report" >> $GITHUB_STEP_SUMMARY
@@ -97,7 +118,6 @@ jobs:
           fi
 
           echo "✅ Dependency check completed"
-
   maintenance-summary:
     name: 📊 Maintenance Summary
     runs-on: ubuntu-latest
