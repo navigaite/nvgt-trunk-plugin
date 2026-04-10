@@ -90,6 +90,7 @@ All configurations are exported from the `configs/` directory:
 | `biome.json`         | Biome        | JS/TS linting and formatting (alternative to Prettier+ESLint)  |
 | `ruff.toml`          | Ruff         | Python linting (replaces black, isort, pylint, bandit, flake8) |
 | `.stylelintrc.json`  | Stylelint    | CSS/SCSS linting with Tailwind v3/v4 support                   |
+| `.yamlfmt`           | yamlfmt      | YAML formatting (document-start, 120 char width)               |
 | `.yamllint.yaml`     | yamllint     | YAML validation                                                |
 | `.markdownlint.yaml` | markdownlint | Markdown linting                                               |
 | `.shellcheckrc`      | ShellCheck   | Shell script linting                                           |
@@ -104,12 +105,12 @@ All configurations are exported from the `configs/` directory:
 This plugin ships configurations for both **Biome** and **Prettier + ESLint**. They serve the same purpose (JS/TS
 formatting and linting) but have different trade-offs:
 
-| Aspect         | Biome                                  | Prettier + ESLint                             |
-| -------------- | -------------------------------------- | --------------------------------------------- |
-| **Speed**      | Much faster (Rust-based, single tool)  | Slower (two separate Node.js tools)           |
-| **Ecosystem**  | Growing, fewer plugins                 | Mature, extensive plugin ecosystem            |
-| **Tailwind**   | No class sorting plugin yet            | `prettier-plugin-tailwindcss` for class sort  |
-| **Adoption**   | Good for new/greenfield projects       | Best for existing projects with ESLint config |
+| Aspect        | Biome                                 | Prettier + ESLint                             |
+| ------------- | ------------------------------------- | --------------------------------------------- |
+| **Speed**     | Much faster (Rust-based, single tool) | Slower (two separate Node.js tools)           |
+| **Ecosystem** | Growing, fewer plugins                | Mature, extensive plugin ecosystem            |
+| **Tailwind**  | No class sorting plugin yet           | `prettier-plugin-tailwindcss` for class sort  |
+| **Adoption**  | Good for new/greenfield projects      | Best for existing projects with ESLint config |
 
 **Recommendation:**
 
@@ -139,13 +140,13 @@ The following Trunk actions are enabled by default:
 
 ## CI/CD Workflows
 
-| Workflow                | Schedule         | Purpose                                              |
-| ----------------------- | ---------------- | ---------------------------------------------------- |
-| **CI Pipeline**         | Push/PR to main  | Universal pipeline (lint, security)                  |
-| **Trunk Upgrade**       | Mon/Fri 8 AM UTC | Auto-upgrade linter versions                         |
-| **Weekly Release**      | Monday 9 AM UTC  | Create release with changelog                        |
-| **Automerge**           | On PR events     | Auto-merge labeled PRs                               |
-| **Nightly Maintenance** | Daily 2 AM UTC   | Cleanup, security audit, dependency check            |
+| Workflow                | Schedule         | Purpose                                   |
+| ----------------------- | ---------------- | ----------------------------------------- |
+| **CI Pipeline**         | Push/PR to main  | Universal pipeline (lint, security)       |
+| **Trunk Upgrade**       | Mon/Fri 8 AM UTC | Auto-upgrade linter versions              |
+| **Weekly Release**      | Monday 9 AM UTC  | Create release with changelog             |
+| **Automerge**           | On PR events     | Auto-merge labeled PRs                    |
+| **Nightly Maintenance** | Daily 2 AM UTC   | Cleanup, security audit, dependency check |
 
 ## Runtimes
 
