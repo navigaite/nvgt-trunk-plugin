@@ -120,17 +120,25 @@ jobs:
     needs: check-updates
     if: needs.check-updates.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
     steps:
+      - name: 🔑 Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
       - name: 📥 Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
       - name: 👤 Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: 🧹 Close stale release PRs
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           mapfile -t PR_NUMBERS < <(
             gh pr list \
@@ -174,7 +182,7 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: 📦 Create tag and GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh release create "${{ steps.bump.outputs.version }}" \
             --target main \
@@ -204,7 +212,7 @@ jobs:
           )"
       - name: 🔄 Create version bump PR
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           BRANCH="release/${{ steps.bump.outputs.version }}"
           git checkout -b "$BRANCH"

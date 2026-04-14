@@ -4,7 +4,7 @@ version: '2.0'
 stack: nodejs
 
 runtime:
-  node_version: '22'
+  node_version: '25'
 
 pipeline:
   fail_fast: false
@@ -21,7 +21,7 @@ lint:
   enable: true
 
 test:
-  enable: false
+  enable: true
 
 build:
   enable: true

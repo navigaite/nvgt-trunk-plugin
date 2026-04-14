@@ -23,17 +23,25 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: 🔑 Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
       - name: 📥 Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: ⬆️ Trunk Upgrade
         uses: trunk-io/trunk-action/upgrade@v1
         with:
           add-paths: plugin.yaml
           arguments: --apply-to=plugin.yaml -n
-          github-token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.app-token.outputs.token }}
           base: main
           prefix: 'ci(trunk-upgrade): '
           labels: automerge
