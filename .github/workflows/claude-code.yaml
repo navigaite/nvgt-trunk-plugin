@@ -9,6 +9,10 @@ on:
   issue_comment:
     types: [created]
 
+concurrency:
+  group: claude-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
@@ -17,12 +21,16 @@ jobs:
       (github.event_name == 'pull_request_review' &&
         github.event.review.user.login == 'copilot[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
-        contains(github.event.comment.body, '@claude')) ||
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
+        github.event.comment.author_association)) ||
       (github.event_name == 'issue_comment' &&
-        contains(github.event.comment.body, '@claude'))
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
+        github.event.comment.author_association))
     permissions:
       contents: write
       pull-requests: write
       issues: write
-    uses: navigaite/.github/.github/workflows/claude-code.yaml@main
+    uses: navigaite/.github/.github/workflows/claude-code.yaml@v2
     secrets: inherit
