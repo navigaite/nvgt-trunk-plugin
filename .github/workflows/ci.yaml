@@ -2,7 +2,7 @@
 # Navigaite Universal CI/CD Pipeline
 # Uses shared reusable workflow from navigaite/.github
 
-name: CI/CD Pipeline
+name: Navigaite CI/CD Pipeline
 
 on:
   push:
