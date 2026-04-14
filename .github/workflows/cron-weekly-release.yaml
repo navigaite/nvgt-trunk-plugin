@@ -162,9 +162,10 @@ jobs:
       - name: 🔢 Determine version
         id: bump
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          set -euo pipefail
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           RANGE="HEAD"
-          if [[ -n "$LAST_TAG" ]]; then
+          if [[ "$LAST_TAG" != "v0.0.0" ]]; then
             RANGE="${LAST_TAG}..HEAD"
           fi
 
@@ -179,7 +180,20 @@ jobs:
             BUMP_TYPE="minor"
           fi
 
-          NEW_VERSION=$(npm version "$BUMP_TYPE" --no-git-tag-version)
+          # Compute next version from LAST_TAG (source of truth), not package.json
+          # which can drift out of sync if a previous bump PR wasn't merged.
+          CURRENT_VERSION="${LAST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          case "$BUMP_TYPE" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+
+          # Sync package.json for the subsequent bump PR
+          npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
+
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: 📦 Create tag and GitHub Release
