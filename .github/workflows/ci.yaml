@@ -33,7 +33,7 @@ jobs:
   # Required by org ruleset — this repo has no dev branch, so all PRs target main directly
   branch-guard:
     name: Branch Guard
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
