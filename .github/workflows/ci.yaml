@@ -38,15 +38,16 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Evaluate pipeline result
+        shell: bash
         env:
-          RESULTS: ${{ toJSON(needs.*.result) }}
+          RESULT: ${{ needs.pipeline.result }}
         run: |
-          echo "Job results: $RESULTS"
-          if echo "$RESULTS" | jq -e 'map(select(. == "failure" or . == "cancelled")) | length > 0' > /dev/null 2>&1; then
-            echo "::error::Pipeline failed"
-            exit 1
-          fi
-          echo "✅ All pipeline jobs passed"
+          set -euo pipefail
+          echo "Pipeline result: $RESULT"
+          case "$RESULT" in
+            success|skipped) echo "✅ Pipeline passed" ;;
+            *) echo "::error::Pipeline failed (result: $RESULT)"; exit 1 ;;
+          esac
 
   # Required by org ruleset — this repo has no dev branch, so all PRs target main directly
   branch-guard:
