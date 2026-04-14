@@ -11,6 +11,10 @@ on:
     branches: [main]
   merge_group: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 permissions:
   contents: write
   pull-requests: write
@@ -25,10 +29,8 @@ jobs:
     uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v2
     with:
       config-file: .github/pipeline.yaml
-      # Work around TruffleHog push-mode edge case in the shared action by scanning on PRs only.
       skip-security: ${{ github.event_name != 'pull_request' }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+    secrets: inherit
 
   # Required by org ruleset — this repo has no dev branch, so all PRs target main directly
   branch-guard:

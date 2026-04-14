@@ -1,54 +1,28 @@
 ---
-name: Claude Code
+name: 🤖 Claude Code
 
 on:
-  # Fix Copilot review comments once its review is submitted
   pull_request_review:
     types: [submitted]
-
-  # Fix individual review comments when @claude is mentioned
   pull_request_review_comment:
     types: [created]
-
-  # Handle @claude mentions in PR / issue discussions
   issue_comment:
     types: [created]
 
-concurrency:
-  group: claude-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+permissions: {}
 
 jobs:
   claude:
-    # Skip unnecessary runner spin-ups:
-    # - review submitted: only for Copilot bot
-    # - review/issue comments: only @claude mentions from trusted authors
     if: >-
       (github.event_name == 'pull_request_review' &&
         github.event.review.user.login == 'copilot[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
-        contains(github.event.comment.body, '@claude') &&
-        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
-        github.event.comment.author_association)) ||
+        contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'issue_comment' &&
-        contains(github.event.comment.body, '@claude') &&
-        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
-        github.event.comment.author_association))
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Let Copilot review comments trigger Claude fixes
-          allowed_bots: copilot[bot]
+        contains(github.event.comment.body, '@claude'))
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    uses: navigaite/.github/.github/workflows/claude-code.yaml@main
+    secrets: inherit
