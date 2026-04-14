@@ -25,6 +25,7 @@ jobs:
     outputs:
       has_changes: ${{ steps.check.outputs.has_changes }}
       changelog: ${{ steps.changelog.outputs.changelog }}
+      head_sha: ${{ steps.check.outputs.head_sha }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v6
@@ -33,6 +34,12 @@ jobs:
       - name: 🔍 Check for changes since last release
         id: check
         run: |
+          # Pin the HEAD SHA used for changelog generation so the downstream
+          # release job tags exactly the commits summarized here (avoids a
+          # race where main advances between jobs).
+          HEAD_SHA=$(git rev-parse HEAD)
+          echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [[ -z "$LAST_TAG" ]]; then
             echo "No previous tag found, treating as first release"
@@ -132,8 +139,15 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v6
         with:
+          # Pin to the same SHA that check-updates generated the changelog from
+          # so the tag we create reflects exactly those commits.
+          ref: ${{ needs.check-updates.outputs.head_sha }}
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
+      - name: 🟢 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
       - name: 👤 Configure git
         run: |
           git config user.name "github-actions[bot]"
@@ -184,17 +198,28 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: 📝 Bump package.json and push to main
         id: commit
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
           NEW_VERSION="${{ steps.bump.outputs.version }}"
           npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
+
+          # Idempotent: if package.json is already at NEW_VERSION (e.g., a previous
+          # run of this job already pushed the bump before failing elsewhere), skip
+          # the commit/push and reuse the existing HEAD.
+          if git diff --quiet package.json package-lock.json; then
+            echo "No version changes to commit (already at ${NEW_VERSION})"
+            echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           git add package.json package-lock.json
-          # [skip ci] avoids running the Navigaite Pipeline on this bump commit
-          # (the release-trigger push is the only event we care about here).
+          # [skip ci] avoids running the Navigaite Pipeline on this bump commit.
           git commit -m "chore(release): ${NEW_VERSION} [skip ci]"
-          git push origin main
+          # We checked out a detached HEAD at needs.check-updates.outputs.head_sha,
+          # so push explicitly to the main ref. Fails fast (non-fast-forward) if
+          # someone pushed to main between check-updates and now — which is the
+          # safe behavior; we'd rather fail than tag a diverged history.
+          git push origin HEAD:main
           echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       - name: 📦 Create tag and GitHub Release
         env:
