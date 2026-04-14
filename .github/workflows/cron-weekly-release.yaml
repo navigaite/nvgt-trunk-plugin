@@ -138,27 +138,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: 🧹 Close stale release PRs
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          mapfile -t PR_NUMBERS < <(
-            gh pr list \
-              --state open \
-              --base main \
-              --json number,headRefName \
-              --jq '.[] | select(.headRefName | startswith("release-please--") or startswith("release/")) | .number'
-          )
-
-          if [[ ${#PR_NUMBERS[@]} -eq 0 ]]; then
-            echo "No stale release PRs found."
-            exit 0
-          fi
-
-          for pr in "${PR_NUMBERS[@]}"; do
-            echo "Closing stale release PR #$pr"
-            gh pr close "$pr" --comment "Closed by weekly automated release workflow."
-          done
       - name: 🔢 Determine version
         id: bump
         run: |
@@ -191,8 +170,7 @@ jobs:
             BUMP_TYPE="minor"
           fi
 
-          # Compute next version from LAST_TAG (source of truth), not package.json
-          # which can drift out of sync if a previous bump PR wasn't merged.
+          # Compute next version from LAST_TAG (the source of truth for releases).
           CURRENT_VERSION="${LAST_TAG#v}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
           case "$BUMP_TYPE" in
@@ -202,17 +180,29 @@ jobs:
           esac
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
 
-          # Sync package.json for the subsequent bump PR
-          npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
-
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+      - name: 📝 Bump package.json and push to main
+        id: commit
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          NEW_VERSION="${{ steps.bump.outputs.version }}"
+          npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
+          git add package.json package-lock.json
+          # [skip ci] avoids running the Navigaite Pipeline on this bump commit
+          # (the release-trigger push is the only event we care about here).
+          git commit -m "chore(release): ${NEW_VERSION} [skip ci]"
+          git push origin main
+          echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       - name: 📦 Create tag and GitHub Release
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
+          # Target the bump commit explicitly so the tag includes the synced package.json
           gh release create "${{ steps.bump.outputs.version }}" \
-            --target main \
+            --target "${{ steps.commit.outputs.commit_sha }}" \
             --title "${{ steps.bump.outputs.version }}" \
             --notes "$(cat <<RELEASE_EOF
           ## 📦 Weekly Plugin Release — ${{ steps.bump.outputs.version }}
@@ -237,21 +227,6 @@ jobs:
           _Automated weekly release by Navigaite CI/CD_
           RELEASE_EOF
           )"
-      - name: 🔄 Create version bump PR
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          BRANCH="release/${{ steps.bump.outputs.version }}"
-          git checkout -b "$BRANCH"
-          git add package.json package-lock.json
-          git commit -m "chore(release): ${{ steps.bump.outputs.version }}"
-          git push origin "$BRANCH"
-          gh pr create \
-            --title "chore(release): ${{ steps.bump.outputs.version }}" \
-            --body "Automated version bump to ${{ steps.bump.outputs.version }}." \
-            --base main \
-            --head "$BRANCH" \
-            --label "automerge"
       - name: 📊 Release Summary
         run: |
           echo "### 📦 Release Created" >> $GITHUB_STEP_SUMMARY
