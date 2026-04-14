@@ -27,15 +27,18 @@ jobs:
   claude:
     # Skip unnecessary runner spin-ups:
     # - review submitted: only for Copilot bot
-    # - review comments: only for @claude mentions
-    # - issue comments: only for @claude mentions
+    # - review/issue comments: only @claude mentions from trusted authors
     if: >-
       (github.event_name == 'pull_request_review' &&
         github.event.review.user.login == 'copilot[bot]') ||
       (github.event_name == 'pull_request_review_comment' &&
-        contains(github.event.comment.body, '@claude')) ||
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
+        github.event.comment.author_association)) ||
       (github.event_name == 'issue_comment' &&
-        contains(github.event.comment.body, '@claude'))
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["MEMBER","OWNER","COLLABORATOR"]'),
+        github.event.comment.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
