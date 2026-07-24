@@ -1,62 +1,144 @@
 ---
-# Navigaite Universal CI/CD Pipeline
-# Uses shared reusable workflow from navigaite/.github
-
 name: Navigaite Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
-  merge_group: {}
+    branches: [main, dev]
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
-permissions:
-  contents: write
-  pull-requests: write
-  deployments: write
-  packages: write
-  id-token: write
-  attestations: write
-  security-events: write
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' }}
 
 jobs:
-  pipeline:
+  branch-guard:
+    name: Branch Guard
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check PR target branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_BASE_REPO: ${{ github.repository }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          if [[ "$PR_BASE" != "main" ]]; then
+            echo "✅ PR targets $PR_BASE — allowed"
+            exit 0
+          fi
+          if [[ "$PR_HEAD_REPO" != "$PR_BASE_REPO" ]]; then
+            echo "::error::❌ Fork PRs cannot target main."
+            exit 1
+          fi
+          DEV_EXISTS=$(gh api "repos/$PR_BASE_REPO/branches/dev" --jq '.name' 2>/dev/null || echo "")
+          if [[ -z "$DEV_EXISTS" ]]; then
+            echo "✅ No dev branch — allowed"
+            exit 0
+          fi
+          if [[ "$PR_HEAD" == "dev" ]]; then
+            RP_FILTER='.[] | select(.state=="open" and .base.ref=="dev"'
+            RP_FILTER+=' and (.head.ref | startswith("release-please"))) | .number'
+            OPEN_RP=$(gh api "repos/$PR_BASE_REPO/pulls" --paginate --jq "$RP_FILTER" | wc -l)
+            if [[ "$OPEN_RP" -gt 0 ]]; then
+              echo "::error::❌ Open release-please PR on dev. Merge it first."
+              exit 1
+            fi
+            echo "✅ Promotion allowed"
+            exit 0
+          fi
+          if [[ "$PR_HEAD" == release-please--* ]]; then
+            if [[ "$PR_AUTHOR" == "github-actions[bot]" || "$PR_AUTHOR" == "navigaite-workflow-app[bot]" ]]; then
+              echo "✅ Release-please PR — allowed"
+              exit 0
+            fi
+            echo "::error::❌ release-please branch but author is '$PR_AUTHOR'"
+            exit 1
+          fi
+          if [[ "$PR_HEAD" == hotfix/* ]]; then
+            echo "⚠️  Hotfix PR — allowed"
+            exit 0
+          fi
+          echo "::error::❌ PRs to main must come from dev, release-please, or hotfix/*."
+          exit 1
+
+  # GitHub validates every job's `permissions:` block inside a called reusable
+  # workflow against what THIS caller job was granted, at trigger time, for
+  # ALL jobs — even ones whose own `if:` will skip them at runtime (e.g.
+  # release/sync-to-dev/deploy-docker, which only run on push to main). If
+  # the caller grants less than any callee job declares, GitHub rejects the
+  # whole workflow before scheduling anything (`startup_failure`, no logs).
+  # So this must carry the same ceiling as pipeline-push, even though the
+  # write-gated jobs never actually execute under pull_request — each of
+  # those jobs' own (more restrictive) permissions block is still what
+  # governs the token inside their steps.
+  pipeline-pr:
+    name: Pipeline (PR)
+    needs: [branch-guard]
+    # `!cancelled()` is required: without a status-check function, GitHub
+    # short-circuits a job whose `needs` was skipped and never evaluates the
+    # `if:` at all — so the explicit `== 'skipped'` arm below is dead without
+    # it (PRI-630, observed on PR #66 run 1).
+    if: |
+      !cancelled() &&
+      github.event_name == 'pull_request' &&
+      (needs.branch-guard.result == 'success' || needs.branch-guard.result == 'skipped')
     uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v3
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+      deployments: write
+      packages: write
+      id-token: write
+      attestations: write
     with:
       config-file: .github/pipeline.yaml
-      skip-security: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
+
+  # On push (main/dev) the ref is already merged code, so release-please,
+  # sync-to-dev, and deploy jobs get the broader write scopes they need.
+  pipeline-push:
+    name: Pipeline (push)
+    if: github.event_name == 'push'
+    uses: navigaite/.github/.github/workflows/universal-pipeline.yaml@v3
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+      deployments: write
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      config-file: .github/pipeline.yaml
     secrets: inherit
 
   check-gate:
     name: Check Gate
     if: always()
-    needs: [pipeline]
+    needs: [branch-guard, pipeline-pr, pipeline-push]
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Evaluate pipeline result
-        shell: bash
         env:
-          RESULT: ${{ needs.pipeline.result }}
+          RESULTS: ${{ toJSON(needs.*.result) }}
         run: |
-          set -euo pipefail
-          echo "Pipeline result: $RESULT"
-          case "$RESULT" in
-            success|skipped) echo "✅ Pipeline passed" ;;
-            *) echo "::error::Pipeline failed (result: $RESULT)"; exit 1 ;;
-          esac
-
-  # Required by org ruleset — this repo has no dev branch, so all PRs target main directly
-  branch-guard:
-    name: Branch Guard
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: ✅ Allow PR
-        run: echo "✅ Single-branch repo — all PRs target main directly"
+          echo "Job results: $RESULTS"
+          FILTER='map(select(. == "failure" or . == "cancelled")) | length > 0'
+          if echo "$RESULTS" | jq -e "$FILTER" > /dev/null 2>&1; then
+            echo "::error::Pipeline failed"
+            exit 1
+          fi
+          echo "✅ All pipeline jobs passed"
