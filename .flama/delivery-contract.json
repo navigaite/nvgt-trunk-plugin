@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "repository": {
+    "owner": "navigaite",
+    "name": "nvgt-trunk-plugin",
+    "visibility": "public"
+  },
+  "paperclip": {
+    "company": "// Navigaite",
+    "projectId": "2c8c0924-a566-47dd-b161-b5832c986957",
+    "workspaceId": "2ffa93e6-6687-4a24-a8b2-e5eb9cc07b56"
+  },
+  "profile": "fast",
+  "branches": {
+    "default": "main",
+    "stable": "main",
+    "featureTarget": "main"
+  },
+  "commands": {
+    "buildable": "./scripts/delivery buildable",
+    "affected": "./scripts/delivery affected",
+    "full": "./scripts/delivery full",
+    "smoke": "./scripts/delivery smoke",
+    "health": "./scripts/delivery health"
+  },
+  "changeDetection": {
+    "failClosed": true,
+    "broadenOn": [
+      "lockfiles",
+      "authentication",
+      "database_schema",
+      "uncertain_detection"
+    ]
+  },
+  "release": {
+    "enabled": true,
+    "strategy": "release-please",
+    "impactSource": "paperclip_task",
+    "type": "node"
+  },
+  "deployment": {
+    "deployable": false,
+    "provider": "none",
+    "manifestPath": ".deploy/production.yaml"
+  },
+  "secrets": {
+    "source": "infisical",
+    "projectSlug": "nvgt-trunk-plugin-jrn5",
+    "paths": {
+      "development": "/development"
+    },
+    "exceptionsFile": ".flama/secret-exceptions.json"
+  },
+  "platform": {
+    "repository": "maxbec/flama-delivery-platform",
+    "version": "0.1.0"
+  }
+}
