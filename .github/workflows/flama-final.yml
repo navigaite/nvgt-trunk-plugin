@@ -1,0 +1,16 @@
+name: Flama Final
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  final:
+    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-final.yml@238d815bcd48d9d767bf3b07fb0283ce31c52110
+    with:
+      base-sha: ${{ github.event.pull_request.base.sha }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      platform-sha: 238d815bcd48d9d767bf3b07fb0283ce31c52110
