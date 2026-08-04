@@ -29,7 +29,7 @@ jobs:
       actions: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Cleanup old caches
         run: |
           echo "::group::🔍 Listing caches"
@@ -54,10 +54,10 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Run OSV-Scanner vulnerability check
         id: osv-scanner
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.5
+        uses: google/osv-scanner-action/osv-scanner-action@c51854704019a247608d928f370c98740469d4b5 # v2.3.5
         continue-on-error: true
         with:
           scan-args: |-
@@ -65,7 +65,7 @@ jobs:
             .
       - name: Create issue on vulnerability findings
         if: steps.osv-scanner.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const title = `🔒 OSV-Scanner: vulnerabilities detected (${new Date().toISOString().split('T')[0]})`;
@@ -94,7 +94,7 @@ jobs:
               });
             }
       - name: Run TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@v3.94.3
+        uses: trufflesecurity/trufflehog@47e7b7cd74f578e1e3145d48f669f22fd1330ca6 # v3.94.3
         with:
           extra_args: --only-verified
   dependency-check:
@@ -105,7 +105,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Check for outdated dependencies
         run: |
           echo "### 📦 Dependency Health Report" >> $GITHUB_STEP_SUMMARY
