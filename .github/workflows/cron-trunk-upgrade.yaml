@@ -25,19 +25,19 @@ jobs:
     steps:
       - name: 🔑 Generate GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ secrets.WORKFLOW_APP_ID }}
           private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
 
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
       - name: ⬆️ Trunk Upgrade
-        uses: trunk-io/trunk-action/upgrade@v1
+        uses: trunk-io/trunk-action/upgrade@04ba50e7658c81db7356da96657e6e77f220bfa3 # v1
         with:
           add-paths: plugin.yaml
           arguments: --apply-to=plugin.yaml -n

@@ -10,10 +10,10 @@ permissions:
 
 jobs:
   policy:
-    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-policy.yml@238d815bcd48d9d767bf3b07fb0283ce31c52110
+    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-policy.yml@8b4fca4b84b7d90de424b3ff58d4fb20195edd10
     with:
       base-sha: ${{ github.event.pull_request.base.sha }}
       head-sha: ${{ github.event.pull_request.head.sha }}
       paperclip-app-slug: flama-delivery-navigaite
-      platform-sha: 238d815bcd48d9d767bf3b07fb0283ce31c52110
+      platform-sha: 8b4fca4b84b7d90de424b3ff58d4fb20195edd10
       profile: fast
