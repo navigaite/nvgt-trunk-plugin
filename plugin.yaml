@@ -104,6 +104,16 @@ lint:
   ignore:
     - linters: [trufflehog, osv-scanner]
       paths: [package-lock.json]
+    # yamlfmt is the single owner of YAML formatting. Prettier and yamlfmt both
+    # wrap at 120 columns but with different algorithms, so certain YAML files
+    # ping-pong between the two formatters and trunk's autofix loop aborts after
+    # 10 iterations ("Incorrect formatting" from both). Excluding YAML from
+    # prettier here fixes this org-wide; per-file trunk-ignore-all(prettier,yamlfmt)
+    # headers in consumer repos are band-aids that can be removed over time.
+    - linters: [prettier]
+      paths:
+        - '**/*.yaml'
+        - '**/*.yml'
 # By sourcing this plugin, repos will enable these actions
 actions:
   enabled:
