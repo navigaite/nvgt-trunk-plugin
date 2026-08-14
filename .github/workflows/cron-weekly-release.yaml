@@ -1,5 +1,6 @@
 ---
 name: 📦 Weekly Plugin Release
+
 on:
   push:
     branches: [main]
@@ -9,125 +10,32 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Dry run (skip release creation)
+        description: Dry run (compute version only, skip branch/PR creation)
         type: boolean
         default: false
+
 permissions:
   contents: write
   pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
+
+# Ruleset-compliant release flow (main requires PRs + verified signatures):
+#   1. propose-release (schedule/dispatch): computes the next version from git
+#      tags + conventional commit subjects, commits the package.json bump to a
+#      hotfix/release-vX.Y.Z branch via the GraphQL createCommitOnBranch
+#      mutation (commits created through the API are signed by GitHub and pass
+#      required_signatures), opens a PR to main and arms squash auto-merge.
+#   2. tag-release (every push to main, plus self-heal on schedule/dispatch):
+#      when package.json carries a version with no matching tag — i.e. the
+#      release PR just merged — creates the tag + GitHub Release. It never
+#      pushes commits to main.
 jobs:
-  check-updates:
-    name: 🔍 Check for Updates
+  tag-release:
+    name: 🏷️ Tag & Release
     runs-on: ubuntu-latest
-    outputs:
-      has_changes: ${{ steps.check.outputs.has_changes }}
-      changelog: ${{ steps.changelog.outputs.changelog }}
-      head_sha: ${{ steps.check.outputs.head_sha }}
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          fetch-depth: 0
-      - name: 🔍 Check for changes since last release
-        id: check
-        run: |
-          # Pin the HEAD SHA used for changelog generation so the downstream
-          # release job tags exactly the commits summarized here (avoids a
-          # race where main advances between jobs).
-          HEAD_SHA=$(git rev-parse HEAD)
-          echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
-
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [[ -z "$LAST_TAG" ]]; then
-            echo "No previous tag found, treating as first release"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          CHANGES=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges)
-          if [[ -z "$CHANGES" ]]; then
-            echo "No changes since $LAST_TAG"
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes found since $LAST_TAG:"
-            echo "$CHANGES"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
-      - name: 📝 Generate changelog
-        id: changelog
-        if: steps.check.outputs.has_changes == 'true'
-        run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          {
-            echo "changelog<<CHANGELOG_EOF"
-
-            # Collect linter version changes from commits
-            UPGRADE_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="trunk-upgrade" || true)
-            if [[ -n "$UPGRADE_COMMITS" ]]; then
-              echo "### ⬆️ Tool Updates"
-              echo ""
-              echo "$UPGRADE_COMMITS" | while read -r line; do
-                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
-                echo "- $MSG"
-              done
-              echo ""
-            fi
-
-            # Collect feature commits
-            FEAT_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="^feat" || true)
-            if [[ -n "$FEAT_COMMITS" ]]; then
-              echo "### ✨ Features"
-              echo ""
-              echo "$FEAT_COMMITS" | while read -r line; do
-                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
-                echo "- $MSG"
-              done
-              echo ""
-            fi
-
-            # Collect fix commits
-            FIX_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges --grep="^fix" || true)
-            if [[ -n "$FIX_COMMITS" ]]; then
-              echo "### 🐛 Bug Fixes"
-              echo ""
-              echo "$FIX_COMMITS" | while read -r line; do
-                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
-                echo "- $MSG"
-              done
-              echo ""
-            fi
-
-            # Collect all other commits
-            OTHER_COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges \
-              --grep="^feat" --grep="^fix" --grep="trunk-upgrade" --invert-grep || true)
-            if [[ -n "$OTHER_COMMITS" ]]; then
-              echo "### 🔧 Maintenance"
-              echo ""
-              echo "$OTHER_COMMITS" | while read -r line; do
-                MSG=$(echo "$line" | sed 's/^[a-f0-9]* //')
-                echo "- $MSG"
-              done
-              echo ""
-            fi
-
-            # Show current tool versions from plugin.yaml
-            echo "### 📋 Current Plugin Info"
-            echo ""
-            LINTER_COUNT=$(grep -cE '^\s+- \S+@' plugin.yaml || echo "0")
-            echo "- **Linters enabled:** $LINTER_COUNT"
-            echo ""
-
-            echo "CHANGELOG_EOF"
-          } >> $GITHUB_OUTPUT
-  create-release:
-    name: 🚀 Create Release
-    runs-on: ubuntu-latest
-    needs: check-updates
-    if: needs.check-updates.outputs.has_changes == 'true' && github.event.inputs.dry_run != 'true'
     steps:
       - name: 🔑 Generate GitHub App Token
         id: app-token
@@ -139,52 +47,160 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          # Pin to the same SHA that check-updates generated the changelog from
-          # so the tag we create reflects exactly those commits.
-          ref: ${{ needs.check-updates.outputs.head_sha }}
           fetch-depth: 0
-          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 🏷️ Create tag and GitHub Release if version is untagged
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r .version package.json)
+          TAG="v${VERSION}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::package.json version '${VERSION}' is not semver"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag ${TAG} already exists — nothing to release"
+            exit 0
+          fi
+
+          # Anchor the changelog on the highest existing semver tag so
+          # manually created tags are respected too.
+          PREV_TAG=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n1 || true)
+          RANGE="HEAD"
+          if [[ -n "$PREV_TAG" ]]; then
+            RANGE="${PREV_TAG}..HEAD"
+          fi
+
+          section() {
+            local title="$1"
+            shift
+            local commits
+            commits=$(git log "$RANGE" --oneline --no-merges "$@" || true)
+            if [[ -n "$commits" ]]; then
+              echo "### ${title}"
+              echo ""
+              echo "$commits" | sed -E 's/^[a-f0-9]+ /- /'
+              echo ""
+            fi
+          }
+
+          {
+            echo "## 📦 Weekly Plugin Release — ${TAG}"
+            echo ""
+            section "⬆️ Tool Updates" --grep="trunk-upgrade"
+            section "✨ Features" --grep="^feat"
+            section "🐛 Bug Fixes" --grep="^fix"
+            section "🔧 Maintenance" --grep="^feat" --grep="^fix" \
+              --grep="trunk-upgrade" --grep="^chore(release)" --invert-grep
+            echo "### 📋 Current Plugin Info"
+            echo ""
+            LINTER_COUNT=$(grep -cE '^\s+- \S+@' plugin.yaml || echo "0")
+            echo "- **Linters enabled:** ${LINTER_COUNT}"
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 🔗 Usage"
+            echo ""
+            echo "Update your \`.trunk/trunk.yaml\` to use this version:"
+            echo ""
+            echo '```yaml'
+            echo "plugins:"
+            echo "  sources:"
+            echo "    - id: navigaite"
+            echo "      uri: https://github.com/navigaite/nvgt-trunk-plugin"
+            echo "      ref: ${TAG}"
+            echo '```'
+            echo ""
+            echo "---"
+            echo "_Automated weekly release by Navigaite CI/CD_"
+          } > release-notes.md
+
+          gh release create "${TAG}" \
+            --target "$(git rev-parse HEAD)" \
+            --title "${TAG}" \
+            --notes-file release-notes.md
+          rm -f release-notes.md
+
+          {
+            echo "### 🏷️ Release Created"
+            echo ""
+            echo "**Tag:** ${TAG}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  propose-release:
+    name: 🚀 Propose Version Bump
+    runs-on: ubuntu-latest
+    needs: tag-release
+    if: github.event_name != 'push'
+    steps:
+      - name: 🔑 Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.WORKFLOW_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+
+      - name: 📥 Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
       - name: 🟢 Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
-      - name: 👤 Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: 🔢 Determine version
+
+      - name: 🔢 Determine next version
         id: bump
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
 
-          # Restrict to semver release tags (vMAJOR.MINOR.PATCH) to ignore any
-          # non-release tags (maintenance, CI, etc.).
-          SEMVER_PATTERN='v[0-9]*.[0-9]*.[0-9]*'
-          LAST_TAG=$(git describe --tags --abbrev=0 --match "$SEMVER_PATTERN" 2>/dev/null || echo "v0.0.0")
-
-          # Validate the resolved tag matches strict semver before arithmetic.
+          # Releases are anchored on git tags (source of truth), picking the
+          # highest existing semver tag so manually created tags are honored.
+          LAST_TAG=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n1 || true)
+          if [[ -z "$LAST_TAG" ]]; then
+            LAST_TAG="v0.0.0"
+            RANGE="HEAD"
+          else
+            RANGE="${LAST_TAG}..HEAD"
+          fi
           if ! [[ "$LAST_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Latest release tag '$LAST_TAG' does not match expected semver format (vMAJOR.MINOR.PATCH)"
+            echo "::error::Latest tag '${LAST_TAG}' is not semver (vMAJOR.MINOR.PATCH)"
             exit 1
           fi
 
-          RANGE="HEAD"
-          if [[ "$LAST_TAG" != "v0.0.0" ]]; then
-            RANGE="${LAST_TAG}..HEAD"
+          if [[ -z "$(git log "$RANGE" --oneline --no-merges)" ]]; then
+            echo "No changes since ${LAST_TAG} — nothing to release"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          # Semantic bump rules:
-          # - major: any BREAKING CHANGE or conventional "type(scope)!:" commit
-          # - minor: any conventional "feat" commit
-          # - patch: default
+          # Skip if a release PR is already open (idempotency across reruns).
+          OPEN_RELEASE_PRS=$(gh pr list --state open --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("hotfix/release-v"))] | length')
+          if [[ "$OPEN_RELEASE_PRS" != "0" ]]; then
+            echo "A release PR is already open — skipping"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Bump rules — deliberately evaluated against commit SUBJECTS only:
+          # squash-merge bodies embed third-party release notes (e.g.
+          # Dependabot pastes upstream changelogs containing lines like
+          # "chore!: ..."), which once caused a bogus major bump to v6.0.0.
+          # Breaking changes must be flagged with "!" in the PR title.
+          SUBJECTS=$(git log "$RANGE" --format='%s' --no-merges)
           BUMP_TYPE="patch"
-          if git log "$RANGE" --format='%s%n%b' | grep -Eiq 'BREAKING CHANGE:|^[a-z]+(\([^)]+\))?!:'; then
+          if echo "$SUBJECTS" | grep -Eq '^[a-z]+(\([^)]+\))?!:'; then
             BUMP_TYPE="major"
-          elif git log "$RANGE" --format='%s' | grep -Eiq '^feat(\([^)]+\))?:'; then
+          elif echo "$SUBJECTS" | grep -Eq '^feat(\([^)]+\))?:'; then
             BUMP_TYPE="minor"
           fi
 
-          # Compute next version from LAST_TAG (the source of truth for releases).
           CURRENT_VERSION="${LAST_TAG#v}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
           case "$BUMP_TYPE" in
@@ -194,68 +210,91 @@ jobs:
           esac
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
 
-          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-      - name: 📝 Bump package.json and push to main
-        id: commit
-        run: |
-          set -euo pipefail
-          NEW_VERSION="${{ steps.bump.outputs.version }}"
-          npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
-
-          # Idempotent: if package.json is already at NEW_VERSION (e.g., a previous
-          # run of this job already pushed the bump before failing elsewhere), skip
-          # the commit/push and reuse the existing HEAD.
-          if git diff --quiet package.json package-lock.json; then
-            echo "No version changes to commit (already at ${NEW_VERSION})"
-            echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-            exit 0
+          if git rev-parse -q --verify "refs/tags/${NEW_VERSION}" >/dev/null; then
+            echo "::error::Computed version ${NEW_VERSION} is already tagged"
+            exit 1
           fi
 
-          git add package.json package-lock.json
-          # [skip ci] avoids running the Navigaite Pipeline on this bump commit.
-          git commit -m "chore(release): ${NEW_VERSION} [skip ci]"
-          # We checked out a detached HEAD at needs.check-updates.outputs.head_sha,
-          # so push explicitly to the main ref. Fails fast (non-fast-forward) if
-          # someone pushed to main between check-updates and now — which is the
-          # safe behavior; we'd rather fail than tag a diverged history.
-          git push origin HEAD:main
-          echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-      - name: 📦 Create tag and GitHub Release
+          echo "Next version: ${NEW_VERSION} (${BUMP_TYPE} bump from ${LAST_TAG})"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "bump_type=${BUMP_TYPE}" >> "$GITHUB_OUTPUT"
+          echo "last_tag=${LAST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: 📝 Open release PR with signed bump commit
+        id: pr
+        if: steps.bump.outputs.has_changes == 'true' && inputs.dry_run != true
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # Target the bump commit explicitly so the tag includes the synced package.json
-          gh release create "${{ steps.bump.outputs.version }}" \
-            --target "${{ steps.commit.outputs.commit_sha }}" \
-            --title "${{ steps.bump.outputs.version }}" \
-            --notes "$(cat <<RELEASE_EOF
-          ## 📦 Weekly Plugin Release — ${{ steps.bump.outputs.version }}
+          set -euo pipefail
+          NEW_VERSION="${{ steps.bump.outputs.version }}"
+          LAST_TAG="${{ steps.bump.outputs.last_tag }}"
+          BRANCH="hotfix/release-${NEW_VERSION}"
+          HEAD_SHA=$(git rev-parse HEAD)
 
-          ${{ needs.check-updates.outputs.changelog }}
+          # Update version files locally; they are committed via the API below.
+          npm version "${NEW_VERSION#v}" --no-git-tag-version --allow-same-version >/dev/null
 
-          ---
+          # Recreate the release branch if a stale one exists, then branch off
+          # the exact SHA the version was computed from.
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}"
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/heads/${BRANCH}" -f sha="${HEAD_SHA}" >/dev/null
 
-          ### 🔗 Usage
+          # createCommitOnBranch: API-created commits are signed by GitHub, so
+          # they satisfy the required_signatures ruleset. Never use git push
+          # here — runner-created commits are unsigned and will be rejected.
+          gh api graphql \
+            -f repo="${GITHUB_REPOSITORY}" \
+            -f branch="${BRANCH}" \
+            -f expectedHeadOid="${HEAD_SHA}" \
+            -f message="chore(release): ${NEW_VERSION}" \
+            -f pkg="$(base64 -w0 package.json)" \
+            -f lock="$(base64 -w0 package-lock.json)" \
+            -f query='
+              mutation($repo: String!, $branch: String!,
+                       $expectedHeadOid: GitObjectID!, $message: String!,
+                       $pkg: Base64String!, $lock: Base64String!) {
+                createCommitOnBranch(input: {
+                  branch: {repositoryNameWithOwner: $repo, branchName: $branch},
+                  expectedHeadOid: $expectedHeadOid,
+                  message: {headline: $message},
+                  fileChanges: {additions: [
+                    {path: "package.json", contents: $pkg},
+                    {path: "package-lock.json", contents: $lock}
+                  ]}
+                }) { commit { oid } }
+              }' >/dev/null
 
-          Update your \`.trunk/trunk.yaml\` to use this version:
+          {
+            echo "Automated weekly release: bumps \`package.json\` to **${NEW_VERSION}**"
+            echo "(${{ steps.bump.outputs.bump_type }} bump from ${LAST_TAG})."
+            echo ""
+            echo "Once this PR merges, the \`tag-release\` job tags main and"
+            echo "publishes the GitHub Release."
+            echo ""
+            echo "### Commits since ${LAST_TAG}"
+            echo ""
+            git log "${LAST_TAG}..${HEAD_SHA}" --oneline --no-merges | sed -E 's/^[a-f0-9]+ /- /'
+          } > pr-body.md
 
-          \`\`\`yaml
-          plugins:
-            sources:
-              - id: navigaite
-                uri: https://github.com/navigaite/nvgt-trunk-plugin
-                ref: ${{ steps.bump.outputs.version }}
-          \`\`\`
+          PR_URL=$(gh pr create --base main --head "${BRANCH}" \
+            --title "chore(release): ${NEW_VERSION}" \
+            --body-file pr-body.md)
+          rm -f pr-body.md
+          gh pr merge --squash --auto "${PR_URL}"
+          echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
 
-          ---
-          _Automated weekly release by Navigaite CI/CD_
-          RELEASE_EOF
-          )"
-      - name: 📊 Release Summary
+      - name: 📊 Summary
+        if: steps.bump.outputs.has_changes == 'true'
         run: |
-          echo "### 📦 Release Created" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Bump Type:** ${{ steps.bump.outputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** ${{ steps.bump.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "### 🚀 Release Proposed"
+            echo ""
+            echo "**Bump Type:** ${{ steps.bump.outputs.bump_type }}"
+            echo "**Version:** ${{ steps.bump.outputs.version }}"
+            echo "**PR:** ${{ steps.pr.outputs.pr_url || 'skipped (dry run)' }}"
+          } >> "$GITHUB_STEP_SUMMARY"
