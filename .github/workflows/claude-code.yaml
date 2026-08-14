@@ -32,5 +32,5 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-    uses: maxbec/pipeline/.github/workflows/claude-code.yaml@4ffe04cb98cb06312430c596614fd4ec05571a3e # v3.4.1
+    uses: maxbec/pipeline/.github/workflows/claude-code.yaml@21ed145329bdfe8e7b201ab6ad3125553c6af382 # v3.5.0
     secrets: inherit
