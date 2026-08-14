@@ -30,7 +30,17 @@ jobs:
     with:
       config-file: .github/pipeline.yaml
       skip-security: ${{ github.event_name != 'pull_request' }}
-    secrets: inherit
+    # Org secrets do not cross the owner boundary via `secrets: inherit`
+    # (pipeline lives in maxbec/pipeline) — forward them explicitly.
+    secrets:
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+      WORKFLOW_APP_ID: ${{ secrets.WORKFLOW_APP_ID }}
+      WORKFLOW_APP_PRIVATE_KEY: ${{ secrets.WORKFLOW_APP_PRIVATE_KEY }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   check-gate:
     name: Check Gate
