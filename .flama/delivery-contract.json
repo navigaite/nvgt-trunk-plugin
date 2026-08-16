@@ -53,6 +53,6 @@
   },
   "platform": {
     "repository": "maxbec/flama-delivery-platform",
-    "version": "v0.5.5"
+    "version": "0.5.5"
   }
 }
