@@ -11,10 +11,11 @@ permissions:
 
 jobs:
   auto-merge:
-    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-auto-merge.yml@330544867f40c1116222ef2769db9da8a8d627cd
+    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-auto-merge.yml@5764805c7c847c910bc6527a800e01a399644589
     with:
       profile: fast
       release-branch: main
+      runner-labels: ${{ vars.PIPELINE_RUNNER || '["ubuntu-latest"]' }}
     # Exactly the optional App credential pair is forwarded, by name. The App
     # identity makes the eventual merge push start push workflows, which the
     # default token's github-actions[bot] merge never does. Where the secrets
