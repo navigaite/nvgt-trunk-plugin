@@ -85,17 +85,37 @@ jobs:
           gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/${TRUNK_BRANCH}" \
             -f "sha=${base_sha}" -F force=true >/dev/null
 
+          read -r -d '' mutation <<'GQL' || true
+          mutation($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) { commit { oid } }
+          }
+          GQL
+
+          body=$(printf '%s\n%s' \
+            "Re-created through the GitHub API so the commit is web-flow signed." \
+            "trunk-action pushes an unsigned commit that required_signatures rejects.")
+
           jq -n \
             --arg repo "$GITHUB_REPOSITORY" \
             --arg branch "$TRUNK_BRANCH" \
             --arg oid "$base_sha" \
+            --arg query "$mutation" \
+            --arg body "$body" \
             --rawfile contents upgraded-plugin.b64 \
             '{
-              query: "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
+              query: $query,
               variables: { input: {
-                branch: { repositoryNameWithOwner: $repo, branchName: $branch },
-                message: { headline: "ci(trunk-upgrade): Upgrade trunk", body: "Re-created through the GitHub API so the commit is web-flow signed; trunk-action pushes an unsigned commit that required_signatures rejects." },
-                fileChanges: { additions: [ { path: "plugin.yaml", contents: $contents } ] },
+                branch: {
+                  repositoryNameWithOwner: $repo,
+                  branchName: $branch
+                },
+                message: {
+                  headline: "ci(trunk-upgrade): Upgrade trunk",
+                  body: $body
+                },
+                fileChanges: {
+                  additions: [ { path: "plugin.yaml", contents: $contents } ]
+                },
                 expectedHeadOid: $oid
               } }
             }' > mutation.json
