@@ -45,3 +45,90 @@ jobs:
           base: main
           prefix: 'ci(trunk-upgrade): '
           labels: automerge
+
+      # trunk-action commits with a plain `git push`, so its commit is unsigned.
+      # `required_signatures` on main rejects an unsigned commit permanently --
+      # re-running the checks never clears it, and the pull request sits green
+      # but unmergeable until someone rewrites the commit by hand. Observed on
+      # #133, which had every gate SUCCESS and still reported BLOCKED.
+      #
+      # Rewrite the branch through the GraphQL API instead: commits created that
+      # way are web-flow signed and always verify. Only plugin.yaml can differ,
+      # because that is the sole path given to `add-paths` above.
+      - name: 🔏 Re-create the upgrade commit so it is signed
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TRUNK_BRANCH: trunk-io/update-trunk
+        run: |
+          set -euo pipefail
+
+          if ! gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${TRUNK_BRANCH}" >/dev/null 2>&1; then
+            echo "No ${TRUNK_BRANCH} branch -- trunk found nothing to upgrade."
+            exit 0
+          fi
+
+          head_sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${TRUNK_BRANCH}" --jq '.object.sha')
+          verified=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${head_sha}" --jq '.commit.verification.verified')
+          if [[ "$verified" == "true" ]]; then
+            echo "Head ${head_sha} is already verified; nothing to rewrite."
+            exit 0
+          fi
+
+          echo "Head ${head_sha} is unsigned. Rewriting it as a signed commit."
+          base_sha=$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')
+          gh api "repos/${GITHUB_REPOSITORY}/contents/plugin.yaml?ref=${head_sha}" --jq '.content' \
+            | tr -d '\n' > upgraded-plugin.b64
+
+          # Reset the branch to main first: createCommitOnBranch takes a single
+          # parent, so replaying the change onto main is what drops the unsigned
+          # commit rather than stacking a signed one on top of it.
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/heads/${TRUNK_BRANCH}" \
+            -f "sha=${base_sha}" -F force=true >/dev/null
+
+          read -r -d '' mutation <<'GQL' || true
+          mutation($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) { commit { oid } }
+          }
+          GQL
+
+          body=$(printf '%s\n%s' \
+            "Re-created through the GitHub API so the commit is web-flow signed." \
+            "trunk-action pushes an unsigned commit that required_signatures rejects.")
+
+          jq -n \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$TRUNK_BRANCH" \
+            --arg oid "$base_sha" \
+            --arg query "$mutation" \
+            --arg body "$body" \
+            --rawfile contents upgraded-plugin.b64 \
+            '{
+              query: $query,
+              variables: { input: {
+                branch: {
+                  repositoryNameWithOwner: $repo,
+                  branchName: $branch
+                },
+                message: {
+                  headline: "ci(trunk-upgrade): Upgrade trunk",
+                  body: $body
+                },
+                fileChanges: {
+                  additions: [ { path: "plugin.yaml", contents: $contents } ]
+                },
+                expectedHeadOid: $oid
+              } }
+            }' > mutation.json
+
+          gh api graphql --input mutation.json --jq '.data.createCommitOnBranch.commit.oid'
+          rm -f upgraded-plugin.b64 mutation.json
+
+          # Resetting the branch to main leaves it momentarily identical to the
+          # base, and GitHub closes a pull request whose diff becomes empty. The
+          # signed commit lands a moment later but the pull request stays closed,
+          # so reopen it. Verified by hand on #133.
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$TRUNK_BRANCH" \
+                 --state all --limit 1 --json number,state --jq '.[0] // empty')
+          if [[ -n "$pr" && "$(jq -r '.state' <<< "$pr")" == "CLOSED" ]]; then
+            gh pr reopen "$(jq -r '.number' <<< "$pr")" --repo "$GITHUB_REPOSITORY"
+          fi
