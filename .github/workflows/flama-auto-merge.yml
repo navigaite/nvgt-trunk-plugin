@@ -15,7 +15,11 @@ jobs:
     with:
       profile: fast
       release-branch: main
-      runner-labels: ${{ vars.PIPELINE_RUNNER || '["ubuntu-latest"]' }}
+      # Public repository: runner placement stays literal here. Inheriting the
+      # org variable PIPELINE_RUNNER (a self-hosted host in the home LAN) would
+      # put fork-authored pull requests on that host the moment the variable's
+      # visibility changed. See PRI-891.
+      runner-labels: '["ubuntu-latest"]'
     # Exactly the optional App credential pair is forwarded, by name. The App
     # identity makes the eventual merge push start push workflows, which the
     # default token's github-actions[bot] merge never does. Where the secrets

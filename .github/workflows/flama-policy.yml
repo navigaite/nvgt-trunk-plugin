@@ -17,4 +17,8 @@ jobs:
       paperclip-app-slug: flama-delivery-navigaite
       platform-sha: 5764805c7c847c910bc6527a800e01a399644589
       profile: fast
-      runner-labels: ${{ vars.PIPELINE_RUNNER || '["ubuntu-latest"]' }}
+      # Public repository: runner placement stays literal here. Inheriting the
+      # org variable PIPELINE_RUNNER (a self-hosted host in the home LAN) would
+      # put fork-authored pull requests on that host the moment the variable's
+      # visibility changed. See PRI-891.
+      runner-labels: '["ubuntu-latest"]'
