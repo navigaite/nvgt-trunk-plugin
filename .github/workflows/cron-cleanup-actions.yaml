@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Run OSV-Scanner vulnerability check
         id: osv-scanner
-        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+        uses: google/osv-scanner-action/osv-scanner-action@8deb546fdb875b9996d27d4950be7312dac076a1 # v2.5.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -94,7 +94,7 @@ jobs:
               });
             }
       - name: Run TruffleHog secret scan
-        uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
+        uses: trufflesecurity/trufflehog@bcfcf73aaf4759d4dadc2783177c245a02792318 # v3.97.0
         with:
           extra_args: --only-verified
   dependency-check:
