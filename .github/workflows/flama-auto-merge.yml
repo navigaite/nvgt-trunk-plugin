@@ -11,15 +11,11 @@ permissions:
 
 jobs:
   auto-merge:
-    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-auto-merge.yml@5764805c7c847c910bc6527a800e01a399644589
+    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-auto-merge.yml@a34f976e94c462dcbde5dc6c75c913b324643ef8
     with:
       profile: fast
       release-branch: main
-      # Public repository: runner placement stays literal here. Inheriting the
-      # org variable PIPELINE_RUNNER (a self-hosted host in the home LAN) would
-      # put fork-authored pull requests on that host the moment the variable's
-      # visibility changed. See PRI-891.
-      runner-labels: '["ubuntu-latest"]'
+      runner-labels: ${{ vars.PIPELINE_RUNNER || '["ubuntu-latest"]' }}
     # Exactly the optional App credential pair is forwarded, by name. The App
     # identity makes the eventual merge push start push workflows, which the
     # default token's github-actions[bot] merge never does. Where the secrets
