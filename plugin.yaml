@@ -116,9 +116,37 @@ lint:
         - '**/*.yml'
 # By sourcing this plugin, repos will enable these actions
 actions:
+  definitions:
+    # Trunk's git hooks take over `core.hooksPath` for the whole repo, so the
+    # machine-local `~/.git-hooks/pre-push` guards stop running in every repo
+    # that sources this plugin. Those guards refuse two things that the org
+    # gates reject anyway, but hours later and with no useful message: a
+    # committer identity that fails `required_signatures`, and a direct push to
+    # a protected branch. Re-running them as a Trunk action is the supported
+    # way to get them back — it survives `trunk upgrade` and
+    # `trunk git-hooks sync`, unlike patching the generated hook script.
+    #
+    # The guards are machine-local policy (they encode this fleet's verified
+    # signing identity and branching model), so the action exits 0 when the
+    # file is absent. A contributor without it is simply unguarded locally and
+    # still blocked server-side, which is the correct outcome.
+    - id: navigaite-push-guard
+      display_name: Navigaite Push Guard
+      description: Refuse pushes the delivery gates would reject (signing, branch target)
+      # `interactive: optional` — NOT `true`. An `interactive: true` action is
+      # skipped in non-interactive contexts, which is exactly how automation and
+      # coding agents push, i.e. the case this guard exists for.
+      interactive: optional
+      # `origin` is omitted deliberately: the guard defaults its remote to
+      # origin, and spelling it out pushes this line past yamllint's 120-char
+      # limit — which yamlfmt then refuses to fold back. Keep it on one line.
+      run: bash -c 'g="$HOME/.git-hooks/pre-push"; [ -x "$g" ] || exit 0; exec "$g" <"$1"' -- '${hook_stdin_path}'
+      triggers:
+        - git_hooks: [pre-push]
   enabled:
     - trunk-announce
     - trunk-cache-prune
     - trunk-upgrade-available
     - trunk-check-pre-push
     - trunk-fmt-pre-commit
+    - navigaite-push-guard
