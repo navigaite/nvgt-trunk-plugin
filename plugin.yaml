@@ -33,11 +33,11 @@ lint:
     - sort-package-json@4.0.0
     - svgo@4.0.2
     # --- Python (ruff replaces black, isort, pylint, bandit, flake8) ---
-    - ruff@0.16.3
+    - ruff@0.16.4
     - mypy@2.3.1
     # --- Go ---
     - gofmt@1.20.4
-    - golangci-lint@2.12.2
+    - golangci-lint@2.13.1
     # --- Ruby ---
     - rubocop@1.39.0
     # --- Rust ---
@@ -53,7 +53,7 @@ lint:
     # --- Docker ---
     - hadolint@2.15.1
     # --- Infrastructure as Code ---
-    - checkov@3.3.11
+    - checkov@3.3.13
     - terrascan@1.19.9
     - cfnlint@1.55.1
     - buildifier@8.5.1
@@ -68,11 +68,11 @@ lint:
     - markdown-link-check@3.13.7
     # --- Security ---
     - trufflehog@3.97.0
-    - semgrep@1.173.0
+    - semgrep@1.174.0
     - osv-scanner@2.5.1
     # --- CI / Config ---
     - actionlint@1.7.12
-    - renovate@44.31.0
+    - renovate@44.37.1
     - dotenv-linter@4.0.0
     - dustilock@1.2.0
     - nancy@2.1.0
