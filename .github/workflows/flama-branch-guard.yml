@@ -9,12 +9,8 @@ permissions:
 
 jobs:
   branch-guard:
-    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-branch-guard.yml@5764805c7c847c910bc6527a800e01a399644589
+    uses: maxbec/flama-delivery-platform/.github/workflows/reusable-branch-guard.yml@a34f976e94c462dcbde5dc6c75c913b324643ef8
     with:
       head-sha: ${{ github.event.pull_request.head.sha }}
       profile: fast
-      # Public repository: runner placement stays literal here. Inheriting the
-      # org variable PIPELINE_RUNNER (a self-hosted host in the home LAN) would
-      # put fork-authored pull requests on that host the moment the variable's
-      # visibility changed. See PRI-891.
-      runner-labels: '["ubuntu-latest"]'
+      runner-labels: ${{ vars.PIPELINE_RUNNER || '["ubuntu-latest"]' }}
