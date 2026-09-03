@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   pipeline:
-    uses: maxbec/pipeline/.github/workflows/universal-pipeline.yaml@823b3952e967282d2b436e924ab8fa438e316a49 # v4.0.3
+    uses: maxbec/pipeline/.github/workflows/universal-pipeline.yaml@b18f120116d11be0390453986d721d4fb41aa554 # v4.0.5
     with:
       config-file: .github/pipeline.yaml
       skip-security: ${{ github.event_name != 'pull_request' }}
