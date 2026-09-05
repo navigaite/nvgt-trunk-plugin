@@ -1,36 +1,18 @@
----
-version: '2.0'
-
+version: '3'
 stack: nodejs
-
 runtime:
   node_version: '25'
-
-pipeline:
-  fail_fast: false
-  enable_caching: true
-
 security:
   enable: true
   trufflehog: true
   dependency_review: true
   fail_on_secrets: true
   fail_on_vulnerabilities: false
-
 lint:
   enable: true
-
 test:
   enable: true
-
 build:
   enable: true
-
-deployment:
+deploy:
   provider: none
-
-release:
-  enable: false
-  type: node
-  bump_minor_pre_major: true
-  sync_to_dev: false
