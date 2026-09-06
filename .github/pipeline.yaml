@@ -1,8 +1,8 @@
 ---
-version: '3'
+version: "3"
 stack: nodejs
 runtime:
-  node_version: '25'
+  node_version: "25"
 security:
   enable: true
   trufflehog: true
