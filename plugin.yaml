@@ -19,6 +19,16 @@ lint:
       commands:
         - name: lint
           run_when: [cli, monitor, ci] # do not run from lsp (may be too slow)
+    # markdown-link-check reads a config only through -c (no auto-discovery).
+    # Without one, every github.com link into a private navigaite repository
+    # (the compare/commit/issue links Flaiky writes into CHANGELOG.md) is a 404
+    # to the unauthenticated checker, which fails the Check gate on each
+    # release PR. The exported config ignores exactly those links.
+    - name: markdown-link-check
+      direct_configs: [.markdown-link-check.json]
+      commands:
+        - name: lint
+          run: markdown-link-check -q -c .markdown-link-check.json "${target}"
   enabled:
     # --- JavaScript / TypeScript ---
     - eslint@10.9.1
@@ -87,6 +97,7 @@ lint:
         - configs/.checkov.yaml
         - configs/.cspell.json
         - configs/.hadolint.yaml
+        - configs/.markdown-link-check.json
         - configs/.yamlfmt
         - configs/.markdownlint.yaml
         - configs/.npmcheckrc
