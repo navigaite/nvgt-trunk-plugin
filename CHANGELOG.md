@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.2](https://github.com/navigaite/nvgt-trunk-plugin/compare/v5.4.1...v5.4.2) (2026-10-08)
+
+
+### 🐛 Bug Fixes
+
+* **markdown-link-check:** ignore links into private navigaite repos ([#162](https://github.com/navigaite/nvgt-trunk-plugin/issues/162)) ([095d5b7](https://github.com/navigaite/nvgt-trunk-plugin/commit/095d5b796ab6246798f5bde24f3184dcd5d28e57))
+
 ## [5.4.2](https://github.com/navigaite/nvgt-trunk-plugin/compare/v5.4.1...v5.4.2) (2026-10-07)
 
 
