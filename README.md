@@ -83,22 +83,23 @@ Add automated code review to PRs using [Claude Code Action](https://github.com/a
 
 All configurations are exported from the `configs/` directory:
 
-| Config               | Tool         | Purpose                                                        |
-| -------------------- | ------------ | -------------------------------------------------------------- |
-| `.prettierrc`        | Prettier     | JS/TS formatting (120 char width, single quotes)               |
-| `.prettierignore`    | Prettier     | Ignore patterns for generated code, build output, lock files   |
-| `biome.json`         | Biome        | JS/TS linting and formatting (alternative to Prettier+ESLint)  |
-| `ruff.toml`          | Ruff         | Python linting (replaces black, isort, pylint, bandit, flake8) |
-| `.stylelintrc.json`  | Stylelint    | CSS/SCSS linting with Tailwind v3/v4 support                   |
-| `.yamlfmt`           | yamlfmt      | YAML formatting (document-start, 120 char width)               |
-| `.yamllint.yaml`     | yamllint     | YAML validation                                                |
-| `.markdownlint.yaml` | markdownlint | Markdown linting                                               |
-| `.shellcheckrc`      | ShellCheck   | Shell script linting                                           |
-| `.checkov.yaml`      | Checkov      | IaC security scanning                                          |
-| `.hadolint.yaml`     | Hadolint     | Dockerfile linting                                             |
-| `rustfmt.toml`       | rustfmt      | Rust formatting                                                |
-| `.cspell.json`       | CSpell       | Spell checking (EN + DE)                                       |
-| `svgo.config.mjs`    | SVGO         | SVG optimization                                               |
+| Config                      | Tool                | Purpose                                                                        |
+| --------------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| `.prettierrc`               | Prettier            | JS/TS formatting (120 char width, single quotes)                               |
+| `.prettierignore`           | Prettier            | Ignore patterns for generated code, build output, lock files                   |
+| `biome.json`                | Biome               | JS/TS linting and formatting (alternative to Prettier+ESLint)                  |
+| `ruff.toml`                 | Ruff                | Python linting (replaces black, isort, pylint, bandit, flake8)                 |
+| `.stylelintrc.json`         | Stylelint           | CSS/SCSS linting with Tailwind v3/v4 support                                   |
+| `.yamlfmt`                  | yamlfmt             | YAML formatting (document-start, 120 char width)                               |
+| `.yamllint.yaml`            | yamllint            | YAML validation                                                                |
+| `.markdownlint.yaml`        | markdownlint        | Markdown linting                                                               |
+| `.markdown-link-check.json` | markdown-link-check | Ignores links into private navigaite repos (404 to an unauthenticated checker) |
+| `.shellcheckrc`             | ShellCheck          | Shell script linting                                                           |
+| `.checkov.yaml`             | Checkov             | IaC security scanning                                                          |
+| `.hadolint.yaml`            | Hadolint            | Dockerfile linting                                                             |
+| `rustfmt.toml`              | rustfmt             | Rust formatting                                                                |
+| `.cspell.json`              | CSpell              | Spell checking (EN + DE)                                                       |
+| `svgo.config.mjs`           | SVGO                | SVG optimization                                                               |
 
 ### Biome vs Prettier + ESLint
 
