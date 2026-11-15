@@ -1,6 +1,6 @@
 ---
 # The second caller every repository carries, as .github/workflows/train.yaml.
-# The renderer fills in 5a4fbe6058932a80711def438e574bf009e6d1e7 and v5.5.1 — the same
+# The renderer fills in 64f3baec98dce8fca6cd6b19c5fb21d0aa197b7e and v5.5.2 — the same
 # commit and tag as the Pipeline caller — and removes the schedule block
 # between the two markers where a central sweep covers the repository.
 #
@@ -28,8 +28,8 @@ jobs:
   train:
     # The kill switch. A job-level condition, so a stopped train starts no runner.
     if: vars.TRAIN != 'off'
-    # v5.5.1
-    uses: maxbec/pipeline/.github/workflows/train.yaml@5a4fbe6058932a80711def438e574bf009e6d1e7
+    # v5.5.2
+    uses: maxbec/pipeline/.github/workflows/train.yaml@64f3baec98dce8fca6cd6b19c5fb21d0aa197b7e
     permissions:
       contents: read
     # By name: `secrets: inherit` drops organization secrets when the called
