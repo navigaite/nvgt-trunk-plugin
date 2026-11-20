@@ -35,15 +35,15 @@ lint:
     - prettier@3.10.1:
         packages:
           - prettier-plugin-tailwindcss@0.8.1
-    - stylelint@18.0.0:
+    - stylelint@18.1.0:
         packages:
-          - stylelint-config-standard@41.0.0
+          - stylelint-config-standard@41.1.0
           - stylelint-config-tailwindcss@1.0.1
           - stylelint-config-clean-order@10.0.0
     - sort-package-json@4.1.0
     - svgo@4.1.0
     # --- Python (ruff replaces black, isort, pylint, bandit, flake8) ---
-    - ruff@0.17.5
+    - ruff@0.17.6
     - mypy@2.4.1
     # --- Go ---
     - gofmt@1.20.4
@@ -63,26 +63,26 @@ lint:
     # --- Docker ---
     - hadolint@2.15.1
     # --- Infrastructure as Code ---
-    - checkov@3.4.5
+    - checkov@3.4.6
     - terrascan@1.19.9
-    - cfnlint@1.60.1
+    - cfnlint@1.61.0
     - buildifier@10.2.0
     # --- Data formats ---
     - yamlfmt@0.21.0
     - yamllint@1.38.0
     - taplo@0.10.0
-    - sql-formatter@15.9.0
+    - sql-formatter@15.10.0
     - prisma@8.0.0-rc.34
     # --- Documentation ---
     - markdownlint@0.50.0
     - markdown-link-check@3.13.7
     # --- Security ---
-    - trufflehog@3.99.9
-    - semgrep@1.185.0
+    - trufflehog@3.100.0
+    - semgrep@1.186.0
     - osv-scanner@2.7.1
     # --- CI / Config ---
     - actionlint@1.7.12
-    - renovate@44.246.4
+    - renovate@44.257.3
     - dotenv-linter@4.0.0
     - dustilock@1.2.0
     - nancy@2.1.1
