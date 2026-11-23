@@ -63,7 +63,7 @@ lint:
     # --- Docker ---
     - hadolint@2.15.1
     # --- Infrastructure as Code ---
-    - checkov@3.4.6
+    - checkov@3.4.7
     - terrascan@1.19.9
     - cfnlint@1.61.0
     - buildifier@10.2.0
@@ -72,17 +72,17 @@ lint:
     - yamllint@1.38.0
     - taplo@0.10.0
     - sql-formatter@15.10.0
-    - prisma@8.0.0-rc.34
+    - prisma@8.0.0-rc.35
     # --- Documentation ---
-    - markdownlint@0.50.0
+    - markdownlint@0.50.1
     - markdown-link-check@3.13.7
     # --- Security ---
-    - trufflehog@3.100.0
+    - trufflehog@3.100.1
     - semgrep@1.186.0
     - osv-scanner@2.7.1
     # --- CI / Config ---
     - actionlint@1.7.12
-    - renovate@44.257.3
+    - renovate@44.258.1
     - dotenv-linter@4.0.0
     - dustilock@1.2.0
     - nancy@2.1.1
