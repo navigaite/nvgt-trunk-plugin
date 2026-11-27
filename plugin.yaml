@@ -31,7 +31,7 @@ lint:
           run: markdown-link-check -q -c .markdown-link-check.json "${target}"
   enabled:
     # --- JavaScript / TypeScript ---
-    - eslint@10.15.0
+    - eslint@10.16.0
     - prettier@3.10.1:
         packages:
           - prettier-plugin-tailwindcss@0.8.1
@@ -63,7 +63,7 @@ lint:
     # --- Docker ---
     - hadolint@2.15.1
     # --- Infrastructure as Code ---
-    - checkov@3.4.7
+    - checkov@3.4.11
     - terrascan@1.19.9
     - cfnlint@1.61.0
     - buildifier@10.2.0
@@ -72,17 +72,17 @@ lint:
     - yamllint@1.38.0
     - taplo@0.10.0
     - sql-formatter@15.10.0
-    - prisma@8.0.0-rc.35
+    - prisma@8.0.0-rc.36
     # --- Documentation ---
     - markdownlint@0.50.1
     - markdown-link-check@3.13.7
     # --- Security ---
     - trufflehog@3.100.1
-    - semgrep@1.186.0
+    - semgrep@1.187.0
     - osv-scanner@2.7.1
     # --- CI / Config ---
     - actionlint@1.7.12
-    - renovate@44.258.1
+    - renovate@45.3.2
     - dotenv-linter@4.0.0
     - dustilock@1.2.0
     - nancy@2.1.1
